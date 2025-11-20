@@ -1,6 +1,8 @@
 #include "C:\code\telemetryhub\device\include\telemetryhub\device\FileHandle.h"
 #include <iostream>
 #include <string>
+#include <cstring> // for std::strlen
+#include <cstdio>  // for std::fwrite
 
 using telemetryhub::device::FileHandle;
 
