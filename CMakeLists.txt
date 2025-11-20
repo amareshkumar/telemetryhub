@@ -8,10 +8,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Optionally: warnings, sanitizers, etc. in cmake/ConfigWarnings.cmake
 # include(cmake/ConfigWarnings.cmake)
 
-option(BUILD_GUI "Build Qt GUI" ON)
+# option(BUILD_GUI "Build Qt GUI" ON)
 option(BUILD_TESTING "Build tests" ON)
 
-# add_subdirectory(device)
+add_subdirectory(device)
+add_subdirectory(tools)
 # add_subdirectory(gateway)
 
 if (BUILD_GUI)
@@ -19,6 +20,6 @@ if (BUILD_GUI)
 endif()
 
 if (BUILD_TESTING)
-    # enable_testing()
+    enable_testing()
     # add_subdirectory(tests)
 endif()

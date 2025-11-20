@@ -1,6 +1,7 @@
 add_library(device STATIC
-    src/Device.cpp
-    src/DeviceConfig.cpp
+    src/FileHandle.cpp    
+    # src/Device.cpp
+    # src/DeviceConfig.cpp
 )
 
 target_include_directories(device
