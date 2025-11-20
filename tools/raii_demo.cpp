@@ -11,8 +11,10 @@ int main()
     try
     {
         std::cout << "RAII demo starting...\n";
+        //todo: make it flexible so user could choose location where to store the log file
+        std::string logFilePath = "telemetry_demo.log";
 
-        FileHandle f{"telemetry_demo.log", "w"};
+        FileHandle f{logFilePath, "a"};
         if (!f)
         {
             std::cerr << "Failed to open file.\n";
@@ -22,7 +24,7 @@ int main()
         const char* msg = "TelemetryHub RAII demo: this file is managed by FileHandle.\n";
         std::fwrite(msg, 1, std::strlen(msg), f.get());
 
-        std::cout << "Wrote to telemetry_demo.log successfully.\n";
+        std::cout << "Wrote to telemetry_demo.log successfully (append mode).\n";
 
         // Move test: show that move semantics keep things safe
         FileHandle f2 = std::move(f);
