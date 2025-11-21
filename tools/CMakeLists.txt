@@ -13,3 +13,11 @@ add_executable(device_smoke
 target_link_libraries(device_smoke
     PRIVATE device
 )
+
+add_executable(device_state_test
+    device_state_test.cpp
+)
+
+target_link_libraries(device_state_test
+    PRIVATE device
+)

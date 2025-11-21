@@ -77,7 +77,8 @@
   - [ ] Creates `Device`
   - [ ] Prints initial state
 - [ ] Build and run to confirm everything links and runs
-
+- add a simple target to assert the idle and measuring state //cmake --build build_vs --config Debug --target device_state_test
+- add no of samples feature to be provided by the user
 **Interview note (Day 2):**
 - [ ] `docs/day02_notes.md`: API vs ABI, why pImpl is useful (and where you’ve used it)
 
