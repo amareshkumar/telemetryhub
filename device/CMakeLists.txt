@@ -1,6 +1,6 @@
 add_library(device STATIC
     src/FileHandle.cpp    
-    # src/Device.cpp
+    src/Device.cpp
     # src/DeviceConfig.cpp
 )
 
