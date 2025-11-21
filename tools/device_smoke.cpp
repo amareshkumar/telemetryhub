@@ -1,5 +1,5 @@
 #include "../device/include/telemetryhub/device/Device.h"
-
+#include "DeviceUtils.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -8,21 +8,17 @@ using telemetryhub::device::Device;
 using telemetryhub::device::DeviceState;
 using telemetryhub::device::TelemetrySample;
 
-static const char* to_string(DeviceState s)
-{
-    switch (s)
-    {
-    case DeviceState::Idle:      return "Idle";
-    case DeviceState::Measuring: return "Measuring";
-    case DeviceState::Error:     return "Error";
-    case DeviceState::SafeState: return "SafeState";
-    }
-    return "Unknown";
-}
 
-int main()
+int main(int argc, char* argv[])
 {
     Device dev;
+    if (argc < 2)
+    {
+        std::cerr << "Usage: device_smoke <number_of_samples>\n";
+        return 1;
+    }
+
+    int num_samples = std::stoi(argv[1]);
 
     std::cout << "Initial state: " << to_string(dev.state()) << "\n";
 
@@ -32,7 +28,7 @@ int main()
 
     using namespace std::chrono_literals;
 
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < num_samples; ++i)
     {
         auto sample_opt = dev.read_sample();
         if (sample_opt)
