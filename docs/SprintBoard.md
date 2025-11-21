@@ -65,7 +65,7 @@
 
 ---
 
-### Day 2 – Device Class with pImpl (start tomorrow)
+### ✅ Day 2 – Device Class with pImpl (start tomorrow)
 
 - [ ] Add `Device.h` + `Device.cpp`:
   - [ ] `enum class DeviceState { Idle, Measuring, Error, SafeState };`
@@ -396,4 +396,4 @@
 ## Done
 
 - [x] Day 1 – Repo bootstrap + RAII `FileHandle`
-- [ ] (Move completed tasks here as you progress)
+- [x] Day 2 – Device Class with pImpl
