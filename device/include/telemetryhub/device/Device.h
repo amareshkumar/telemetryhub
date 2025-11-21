@@ -26,8 +26,9 @@ public:
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
 
-    void start();
-    void stop();
+    // Control
+    void start();  // request start of measurement
+    void stop();   // request stop of measurement
 
     DeviceState state() const;
 

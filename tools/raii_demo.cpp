@@ -1,4 +1,5 @@
-#include "C:\code\telemetryhub\device\include\telemetryhub\device\FileHandle.h"
+#include "../device/include/telemetryhub/device/FileHandle.h"
+
 #include <iostream>
 #include <string>
 #include <cstring> // for std::strlen
