@@ -206,6 +206,10 @@
 
 **Interview note (Day 9):**
 - [ ] Document API routes and example responses
+- [ ] Short notes:
+  - [ ] UART: point-to-point, asynchronous, simple.
+  - [ ] I²C: multi-drop, addressing, lower speed, 2 wires.
+  - [ ] SPI: high speed, full duplex, separate chip-selects.
 
 ---
 
@@ -303,6 +307,17 @@
 - [ ] Allow `Device` to respond to “commands” via simulated serial:
   - [ ] Example: “CALIBRATE”, “SET_RATE=1000”
 - [ ] Optional: tool to send commands to the device through the simulator
+- [ ] Add IBus interface (BusInterface.h) and BusType enum
+- [ ] Implement UartBusSim: 
+  - [ ] Simple buffer/file-backed implementation.
+  - [ ] write() appends bytes, read() consumes.
+- [ ] Implement I2cBusSim:
+  - [ ] Store (address, data) pairs.
+  - [ ] write() takes an address as first byte, rest as payload.
+- [ ] Implement SpiBusSim:
+  - [ ] Simulate master transfer(tx, rx) using write()+read() internally.
+- [ ] Device::Impl holds a std::unique_ptr<IBus>:
+  - [ ] Used to receive configuration commands (SET_RATE, CALIBRATE, etc.).
 
 **Interview note (Day 16):**
 - [ ] Capture how this maps to real UART/I²C experiences
@@ -335,6 +350,11 @@
 - [ ] Add tests for:
   - [ ] Error → SafeState transitions
   - [ ] Recovery behaviour (if any)
+- [ ] Bus failure modes:
+  - [ ] UART framing errors, noise.
+  - [ ] I²C NACKs.
+  - [ ] SPI clock misconfig.
+- [ ] How TelemetryHub’s device would detect and react (e.g. too many bus errors → Error → SafeState).
 
 **Interview note (Day 18):**
 - [ ] Explain safe-state in context of medical/industrial devices
