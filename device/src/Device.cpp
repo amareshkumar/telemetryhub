@@ -1,5 +1,6 @@
-#include "../telemetryhub/device/Device.h"
+#include "../include/telemetryhub/device/Device.h"
 #include <random>
+#include <cmath>
 
 namespace telemetryhub::device {
 
