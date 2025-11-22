@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph Device Layer
+        D["DeviceSim (C++ library)"]
+    end
+
+    subgraph Gateway Layer
+        GC["GatewayCore (threads, queue)"]
+        Q["TelemetryQueue"]
+        REST["REST API (local HTTP)"]
+        CLOUD["ICloudClient (optional cloud)"]
+    end
+
+    subgraph Presentation Layer
+        GUI["Qt Desktop UI"]
+        CLI["Gateway CLI (console)"]
+    end
+
+    D -- samples --> GC
+    GC --> Q
+    Q --> GC
+    GC --> REST
+    GC --> CLOUD
+    GUI <-- HTTP/Client --> REST
+    CLI --> GC
