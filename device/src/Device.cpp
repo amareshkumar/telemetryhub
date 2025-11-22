@@ -11,6 +11,12 @@ struct Device::Impl
     std::mt19937_64 rng{std::random_device{}()}; // random number generator
     std::normal_distribution<double> noise_dist{0.0, 0.1}; // Gaussian noise
 
+    // Fault simulation
+    std::uint32_t samples_before_fault = 8; // e.g., fault after 8 samples
+    int error_counter = 0;
+    int max_errors = 1; // allow only one error before safe state
+
+
     TelemetrySample make_sample()
     {
         using clock = std::chrono::system_clock;
@@ -23,6 +29,23 @@ struct Device::Impl
         s.unit = "arb.units";
         s.sequence_id = sequence++;
         return s;
+    }
+
+    void enter_error_state()
+    {
+        state = DeviceState::Error;
+        error_counter++;
+
+        if (error_counter > max_errors)
+        {
+            state = DeviceState::SafeState;
+        }   
+    }
+
+    void reset_sequence()
+    {
+        sequence = 0;
+        error_counter = 0;
     }
 };
 
@@ -37,14 +60,17 @@ Device& Device::operator=(Device&&) noexcept = default;
 
 void Device::start()
 {
+    // Only allow starting from Idle.
+    // If we are in Error or SafeState, we do NOT auto-recover here.
     if (impl_->state == DeviceState::Idle){
-        impl_->sequence = 0;
+        impl_->reset_sequence();
         impl_->state = DeviceState::Measuring;
     }
 }
 
 void Device::stop()
 {
+    // Only allow stopping from Measuring; otherwise ignore.
     if (impl_->state == DeviceState::Measuring){
         impl_->state = DeviceState::Idle;
     }
@@ -58,6 +84,13 @@ DeviceState Device::state() const
 std::optional<TelemetrySample> Device::read_sample()
 {
     if (impl_->state != DeviceState::Measuring){
+        return std::nullopt;
+    }
+
+    // Simulate fault condition
+    if (impl_->sequence >= impl_->samples_before_fault){
+        // simulate device error
+        impl_->enter_error_state();
         return std::nullopt;
     }
 
