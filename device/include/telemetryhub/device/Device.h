@@ -17,7 +17,7 @@ enum class DeviceState
 class Device
 {
 public:
-    Device();
+    explicit Device(int fault_after_samples = 8);
     ~Device();
 
     Device(Device&&) noexcept;
