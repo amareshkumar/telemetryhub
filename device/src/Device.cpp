@@ -12,7 +12,7 @@ struct Device::Impl
     std::normal_distribution<double> noise_dist{0.0, 0.1}; // Gaussian noise
 
     // Fault simulation
-    std::uint32_t samples_before_fault = 8; // e.g., fault after 8 samples
+    std::uint32_t samples_before_fault = 8; // e.g., fault after 8 samples/. Default, can be overridden
     int error_counter = 0;
     int max_errors = 1; // allow only one error before safe state
 
@@ -49,9 +49,11 @@ struct Device::Impl
     }
 };
 
-Device::Device()
+Device::Device(int fault_after_samples)
     : impl_(std::make_unique<Impl>())
-{}
+{
+    impl_->samples_before_fault = fault_after_samples;
+}
 
 Device::~Device() = default;
 

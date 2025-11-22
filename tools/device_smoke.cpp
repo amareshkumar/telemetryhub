@@ -1,5 +1,6 @@
 #include "../device/include/telemetryhub/device/Device.h"
-#include "DeviceUtils.h"
+#include "../device/include/telemetryhub/device/DeviceUtils.h"
+
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -7,18 +8,28 @@
 using telemetryhub::device::Device;
 using telemetryhub::device::DeviceState;
 using telemetryhub::device::TelemetrySample;
+using telemetryhub::device::to_string;
 
 
 int main(int argc, char* argv[])
 {
     Device dev;
-    if (argc < 2)
-    {
-        std::cerr << "Usage: device_smoke <number_of_samples>\n";
-        return 1;
-    }
+    int num_samples = 20;
 
-    int num_samples = std::stoi(argv[1]);
+    if (argc >= 2)
+    {
+        try
+        {
+            num_samples = std::stoi(argv[1]);
+        }
+        catch (const std::exception& ex)
+        {
+            std::cerr << "Invalid number of samples argument: " << argv[1] 
+                    << "': " << ex.what() << "\n"
+                    << "Using default: " << num_samples << "\n";
+            return 1;
+        }
+    }
 
     std::cout << "Initial state: " << to_string(dev.state()) << "\n";
 
@@ -32,6 +43,8 @@ int main(int argc, char* argv[])
     {
         auto st = dev.state();
         auto sample_opt = dev.read_sample();
+        
+        std::cout << "[Loop " << i << "] state=" << to_string(st);
         
         if (sample_opt)
         {
