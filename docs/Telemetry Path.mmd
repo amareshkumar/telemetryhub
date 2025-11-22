@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant Dev as DeviceSim
+    participant Gate as GatewayCore
+    participant Q as TelemetryQueue
+    participant API as REST API
+    participant GUI as Qt UI
+
+    Dev->>Gate: read_sample()
+    Gate->>Q: push(sample)
+    Q-->>Gate: pop(sample)
+    Gate->>Gate: update latest_sample
+
+    GUI->>API: GET /status
+    API->>Gate: query state + latest_sample
+    Gate-->>API: state + sample
+    API-->>GUI: JSON response
+    GUI->>GUI: update labels/graphs

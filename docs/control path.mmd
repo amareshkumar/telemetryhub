@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant GUI as Qt UI
+    participant API as REST API
+    participant Gate as GatewayCore
+    participant Dev as DeviceSim
+
+    GUI->>API: POST /start
+    API->>Gate: start_device()
+    Gate->>Dev: start()
+    Dev-->>Gate: state = Measuring
+
+    GUI->>API: POST /stop
+    API->>Gate: stop_device()
+    Gate->>Dev: stop()
+    Dev-->>Gate: state = Idle
