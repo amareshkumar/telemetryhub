@@ -30,7 +30,9 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < num_samples; ++i)
     {
+        auto st = dev.state();
         auto sample_opt = dev.read_sample();
+        
         if (sample_opt)
         {
             const TelemetrySample& s = *sample_opt;
@@ -45,6 +47,14 @@ int main(int argc, char* argv[])
         }
 
         std::this_thread::sleep_for(200ms);
+        // If device has gone to SafeState, try to start again
+        if (dev.state() == DeviceState::SafeState)
+        {
+            std::cout << "Device in SafeState, attempting to restart...\n";
+            dev.start();
+            std::cout << "State after restart attempt: " << to_string(dev.state()) << "\n";
+            break;
+        }   
     }
 
     std::cout << "Stopping device...\n";
