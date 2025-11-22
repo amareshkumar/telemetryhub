@@ -1,4 +1,4 @@
-#include "../include/telemetryhub/device/Device.h"
+#include "telemetryhub/device/Device.h"
 #include <random>
 #include <cmath>
 

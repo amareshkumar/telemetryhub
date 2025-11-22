@@ -1,4 +1,4 @@
-#include "../device/include/telemetryhub/device/FileHandle.h"
+#include "telemetryhub/device/FileHandle.h"
 
 #include <iostream>
 #include <string>

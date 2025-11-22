@@ -1,5 +1,5 @@
-#include "../device/include/telemetryhub/device/Device.h"
-#include "../device/include/telemetryhub/device/DeviceUtils.h"
+#include "telemetryhub/device/Device.h"
+#include "telemetryhub/device/DeviceUtils.h"
 
 #include <iostream>
 #include <thread>
