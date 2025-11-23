@@ -5,6 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+using namespace std::chrono_literals; // enable 100ms duration literal
 
 namespace telemetryhub::gateway {
 
