@@ -13,7 +13,7 @@ option(BUILD_TESTING "Build tests" ON)
 
 add_subdirectory(device)
 add_subdirectory(tools)
-# add_subdirectory(gateway)
+add_subdirectory(gateway)
 
 if (BUILD_GUI)
     # add_subdirectory(gui)
