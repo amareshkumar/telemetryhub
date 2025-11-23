@@ -1,0 +1,23 @@
+sequenceDiagram 
+    participant User
+    participant App as gateway_app
+    participant Core as GatewayCore
+    participant Dev as Device
+
+    User->>App: run gateway_app
+    App->>Core: start()
+    Core->>Dev: start()
+
+    loop monitoring loop
+        App->>Core: device_state(), latest_sample()
+        Core-->>App: state + sample
+
+        alt state == SafeState
+            App-->>User: "Device reached SafeState"
+        else
+            App-->>User: "Device is not in SafeState"
+        end
+    end
+
+    App->>Core: stop()
+    Core->>Dev: stop()

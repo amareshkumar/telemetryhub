@@ -3,7 +3,7 @@
 #include <atomic>
 #include <thread>
 #include <optional>
-#include "../telemetryhub/device/Device.h"
+#include "telemetryhub/device/Device.h"
 #include "telemetryhub/gateway/TelemetryQueue.h"
 
 namespace telemetryhub::gateway {
