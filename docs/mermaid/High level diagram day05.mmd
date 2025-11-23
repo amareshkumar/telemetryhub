@@ -1,0 +1,29 @@
+flowchart LR
+    %% TelemetryHub high-level architecture (Day 5)
+
+    subgraph Device Layer
+        D["Device (C++ library, state machine)"]
+    end
+
+    subgraph Gateway Layer
+        GC["GatewayCore (producer/consumer threads, latest_sample)"]
+        Q["TelemetryQueue (thread-safe queue<TelemetrySample>)"]
+        REST["REST API (local HTTP) – future"]
+        CLOUD["ICloudClient (optional cloud) – future"]
+    end
+
+    subgraph Presentation Layer
+        CLI["gateway_app (console monitor)"]
+        GUI["Qt Desktop UI – future"]
+    end
+
+    %% Implemented paths (up to Day 5)
+    D -- "TelemetrySample\n(read_sample)" --> GC
+    GC --> Q
+    Q --> GC
+    CLI --> GC
+
+    %% Future extensions
+    GC --> REST
+    GC --> CLOUD
+    GUI <-- "HTTP/Client" --> REST
