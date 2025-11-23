@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Dev as DeviceSim
+    participant Prod as ProducerThread
+    participant Cons as ConsumerThread
+    participant Q as TelemetryQueue
+    participant Gate as GatewayCore
+    participant API as REST API
+    participant GUI as Qt UI
+
+    loop sampling loop
+        Prod->>Dev: read_sample()
+        Dev-->>Prod: sample
+        Prod->>Q: push(sample)
+    end
+
+    loop consumption loop
+        Cons->>Q: pop(sample)
+        Q-->>Cons: sample
+        Cons->>Gate: update latest_sample & state
+    end
+
+    GUI->>API: GET /status
+    API->>Gate: query state + latest_sample
+    Gate-->>API: state + sample
+    API-->>GUI: JSON response
+    GUI->>GUI: update labels/graphs
