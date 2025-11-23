@@ -33,13 +33,9 @@ struct Device::Impl
 
     void enter_error_state()
     {
-        state = DeviceState::Error;
+        // Latch directly to SafeState on any error
+        state = DeviceState::SafeState;
         error_counter++;
-
-        if (error_counter > max_errors)
-        {
-            state = DeviceState::SafeState;
-        }   
     }
 
     void reset_sequence()
