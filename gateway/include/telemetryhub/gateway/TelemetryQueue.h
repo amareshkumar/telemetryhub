@@ -4,7 +4,7 @@
 #include <mutex>
 #include <queue>
 #include <optional>
-#include "../telemetryhub/device/TelemetrySample.h"
+#include "telemetryhub/device/TelemetrySample.h"
 
 namespace telemetryhub::gateway {
 

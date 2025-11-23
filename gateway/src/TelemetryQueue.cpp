@@ -1,4 +1,4 @@
-#include "../telemetryhub/gateway/TelemetryQueue.h"
+#include "telemetryhub/gateway/TelemetryQueue.h"
 
 namespace telemetryhub::gateway {
 
