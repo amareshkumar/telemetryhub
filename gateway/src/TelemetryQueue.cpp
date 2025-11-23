@@ -6,6 +6,9 @@ void TelemetryQueue::push(const device::TelemetrySample& sample)
 {
     {
         std::lock_guard lock(mutex_);
+        if (shutdown_) {
+            return; // Do not accept new samples after shutdown
+        }
         queue_.push(sample);
     }
     cv_.notify_one();
@@ -14,11 +17,24 @@ void TelemetryQueue::push(const device::TelemetrySample& sample)
 std::optional<device::TelemetrySample> TelemetryQueue::pop()
 {
     std::unique_lock lock(mutex_);
-    cv_.wait(lock, [this] { return !queue_.empty(); });
+    cv_.wait(lock, [this] { return shutdown_ || !queue_.empty(); });
+
+    if (shutdown_ && queue_.empty()) {
+        return std::nullopt;
+    }
 
     auto sample = queue_.front();
     queue_.pop();
     return sample;
+}
+
+void TelemetryQueue::shutdown()
+{
+    {
+        std::lock_guard lock(mutex_);
+        shutdown_ = true;
+    }
+    cv_.notify_all();
 }
 
 } // namespace telemetryhub::gateway
