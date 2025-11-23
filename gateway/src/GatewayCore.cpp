@@ -68,7 +68,7 @@ void GatewayCore::stop()
 
 device::DeviceState GatewayCore::device_state() const
 {
-    return device::DeviceState();
+    return device_.state();
 }
 
 std::optional<device::TelemetrySample> GatewayCore::latest_sample() const
