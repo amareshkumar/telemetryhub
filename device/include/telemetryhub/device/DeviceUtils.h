@@ -1,7 +1,8 @@
 #pragma once
-#include "../device/include/telemetryhub/device/Device.h"
+#include "Device.h"
 
-using telemetryhub::device::DeviceState;
+namespace telemetryhub::device {
+
 static const char* to_string(DeviceState s)
 {
     switch (s)
@@ -13,3 +14,5 @@ static const char* to_string(DeviceState s)
     }
     return "Unknown";
 }
+
+} // namespace telemetryhub::device
