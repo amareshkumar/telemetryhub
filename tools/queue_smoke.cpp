@@ -26,7 +26,7 @@ int main()
                       << " value=" << s.value << " " << s.unit << "\n";
 
             queue.push(s);
-            std::this_thread::sleep_for(100ms);
+            std::this_thread::sleep_for(500ms);
         }
 
         std::cout << "[producer] done, calling shutdown()\n";
