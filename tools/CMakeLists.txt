@@ -21,3 +21,11 @@ add_executable(device_state_test
 target_link_libraries(device_state_test
     PRIVATE device
 )
+
+add_executable(queue_smoke
+    queue_smoke.cpp
+)
+
+target_link_libraries(queue_smoke
+    PRIVATE gateway_core
+)
