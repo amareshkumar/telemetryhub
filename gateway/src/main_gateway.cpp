@@ -1,5 +1,9 @@
+// TelemetryHub gateway main application
+// Uses to_string(DeviceState) and to_string(TelemetrySample) for concise logging.
+
 #include "telemetryhub/gateway/GatewayCore.h"
-#include "telemetryhub/device/DeviceUtils.h"
+#include "telemetryhub/device/DeviceUtils.h"      // to_string(DeviceState)
+#include "telemetryhub/device/telemetryUtils.h"    // to_string(TelemetrySample)
 
 #include <chrono>
 #include <iostream>
@@ -8,43 +12,39 @@
 using telemetryhub::gateway::GatewayCore;
 using telemetryhub::device::DeviceState;
 using telemetryhub::device::TelemetrySample;
-using telemetryhub::device::to_string;
+
+namespace {
+    // Pretty-print latest sample or placeholder if missing
+    std::string latest_sample_str(const std::optional<TelemetrySample>& opt)
+    {
+        if (!opt)
+            return "(none)";
+        return telemetryhub::device::to_string(*opt);
+    }
+}
 
 int main()
 {
     using namespace std::chrono_literals;
+    std::cout << "Starting TelemetryHub gateway_app...\n";
 
     GatewayCore core;
-
-    std::cout << "Starting TelemetryHub gateway_app...\n";
     core.start();
 
     std::cout << "Monitoring device for a while...\n";
 
-    for (int i = 0; i < 50; ++i)
+    const int max_ticks = 50;
+    for (int tick = 0; tick < max_ticks; ++tick)
     {
         auto state = core.device_state();
         auto latest = core.latest_sample();
 
-        std::cout << "[tick " << i << "] state=" << to_string(state);
-
-        if (latest)
-        {
-            const TelemetrySample& s = *latest;
-            std::cout << " | latest sample #" << s.sequence_id
-                      << " value=" << s.value
-                      << " " << s.unit;
-        }
-        else
-        {
-            std::cout << " | no sample yet";
-        }
-
-        std::cout << "\n";
+        std::cout << "[tick " << tick << "] state=" << telemetryhub::device::to_string(state)
+                  << " | sample=" << latest_sample_str(latest) << "\n";
 
         if (state == DeviceState::SafeState)
         {
-            std::cout << "Device reached SafeState, breaking monitoring loop.\n";
+            std::cout << "Device reached SafeState, stopping early.\n";
             break;
         }
 
@@ -54,6 +54,5 @@ int main()
     std::cout << "Stopping core...\n";
     core.stop();
     std::cout << "gateway_app exiting.\n";
-
     return 0;
 }
