@@ -8,7 +8,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(unit_tests
     test_device.cpp
-    # test_queue.cpp
+    test_queue.cpp
 )
 
 # add_executable(raii_demo
