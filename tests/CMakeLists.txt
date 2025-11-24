@@ -34,4 +34,10 @@ target_link_libraries(unit_tests
         gtest_main
 )
 
-add_test(NAME unit_tests COMMAND unit_tests)
+target_compile_features(unit_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME unit_tests
+    COMMAND unit_tests
+)
+# add_test(NAME telemetryhub_tests COMMAND telemetryhub_tests)
