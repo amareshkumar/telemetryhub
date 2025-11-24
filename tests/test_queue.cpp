@@ -56,3 +56,54 @@ TEST(TelemetryQueueTests, ShutdownCausesPopToReturnNulloptWhenEmpty)
     auto r2 = q.pop();
     EXPECT_FALSE(r2.has_value());
 }
+
+TEST(TelemetryQueueTests, SingleProducerSingleConsumerConcurrent)
+{
+    using namespace std::chrono_literals;
+
+    TelemetryQueue q;
+    constexpr int total_samples = 100;
+
+    std::atomic<int> produced{0};
+    std::atomic<int> consumed{0};
+
+    std::thread producer([&] {
+        for (int i = 0; i < total_samples; ++i)
+        {
+            TelemetrySample s;
+            s.sequence_id = static_cast<std::uint32_t>(i);
+            s.value = 1000.0 + i;
+            s.unit = "mt";
+
+            q.push(s);
+            ++produced;
+
+            // tiny sleep to make interleaving visible and realistic
+            std::this_thread::sleep_for(1ms);
+        }
+
+        q.shutdown();
+    });
+
+    std::thread consumer([&] {
+        while (true)
+        {
+            auto sample_opt = q.pop();
+            if (!sample_opt)
+            {
+                break; // queue shutdown and empty
+            }
+
+            ++consumed;
+
+            // Optional: add sanity checks, but avoid heavy assertions
+            // EXPECT_GE(sample_opt->value, 1000.0);
+        }
+    });
+
+    producer.join();
+    consumer.join();
+
+    EXPECT_EQ(produced.load(), total_samples);
+    EXPECT_EQ(consumed.load(), total_samples);
+}
