@@ -11,21 +11,21 @@ add_executable(unit_tests
     test_queue.cpp
 )
 
-add_executable(raii_demo
-    raii_demo.cpp
-)
+# add_executable(raii_demo
+#     raii_demo.cpp
+# )
 
-target_link_libraries(raii_demo
-    PRIVATE device
-)
+# target_link_libraries(raii_demo
+#     PRIVATE device
+# )
 
-add_executable(device_smoke
-    device_smoke.cpp
-)
+# add_executable(device_smoke
+#     device_smoke.cpp
+# )
 
-target_link_libraries(device_smoke
-    PRIVATE device
-)
+# target_link_libraries(device_smoke
+#     PRIVATE device
+# )
 
 target_link_libraries(unit_tests
     PRIVATE
@@ -34,4 +34,10 @@ target_link_libraries(unit_tests
         gtest_main
 )
 
-add_test(NAME unit_tests COMMAND unit_tests)
+target_compile_features(unit_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME unit_tests
+    COMMAND unit_tests
+)
+# add_test(NAME telemetryhub_tests COMMAND telemetryhub_tests)
