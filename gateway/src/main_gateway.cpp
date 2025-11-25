@@ -1,5 +1,6 @@
 #include "telemetryhub/gateway/GatewayCore.h"
 #include "telemetryhub/device/DeviceUtils.h"
+#include "telemetryhub/Version.h"
 
 #include <chrono>
 #include <iostream>
@@ -15,6 +16,8 @@ int main()
     using namespace std::chrono_literals;
 
     GatewayCore core;
+    
+    std::cout << "TelemetryHub " << telemetryhub::version() << "\n";
 
     std::cout << "Starting TelemetryHub gateway_app...\n";
     core.start();
