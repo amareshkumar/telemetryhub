@@ -46,4 +46,3 @@ telemetryhub/
    ├─ run_ci.sh
    └─ run_ci.bat
 
-// device = fake embedded device, gateway = service/daemon, gui = Qt monitor, tests + tools = infra.
