@@ -1,3 +1,4 @@
+```text
 telemetryhub/
 ├─ CMakeLists.txt
 ├─ cmake/
