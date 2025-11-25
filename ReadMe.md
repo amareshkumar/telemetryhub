@@ -1,4 +1,20 @@
 ```text
+## About
+
+TelemetryHub is a small but realistic C++ project I use to keep my embedded and systems skills sharp and to prepare for technical interviews.
+
+It models a simple telemetry pipeline:
+
+- A **simulated device** with an explicit state machine (`Idle → Measuring → Error → SafeState`), generating `TelemetrySample` data.
+- A **thread-safe TelemetryQueue** that implements a classic producer–consumer pattern with clean shutdown.
+- A **GatewayCore** that runs background threads (producer/consumer), owns the device and queue, and exposes a simple status API.
+- A set of small **CLI tools** (`raii_demo`, `device_smoke`, `queue_smoke`, `gateway_app`) to exercise RAII, state machines and concurrency from the command line.
+- A **GoogleTest + CTest** test suite covering the device behaviour and queue semantics, including a basic multithreaded test.
+
+The focus is on clean, testable C++20 code with patterns that frequently show up in embedded / backend interviews: RAII, pImpl, state machines, producer–consumer queues, thread coordination and safe shutdown.
+
+Following is the folder structure of the project:
+
 telemetryhub/
 ├─ CMakeLists.txt
 ├─ cmake/
