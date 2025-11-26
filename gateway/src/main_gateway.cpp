@@ -11,9 +11,21 @@ using telemetryhub::device::DeviceState;
 using telemetryhub::device::TelemetrySample;
 using telemetryhub::device::to_string;
 
-int main()
+int main(int argc, char* argv[])
 {
     using namespace std::chrono_literals;
+
+    for (int i = 1; i < argc; ++i) {
+        std::string_view a = argv[i];
+        if (a == "--version" || a == "-v") {
+        telemetryhub::print_version();     // <-- call it
+        return 0;
+        }
+        if (a == "--help" || a == "-h") {
+        telemetryhub::print_help(argv[0]); // <-- call it
+        return 0;
+        }
+    }
 
     GatewayCore core;
     
