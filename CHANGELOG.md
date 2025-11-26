@@ -4,14 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
+
+## [0.1.2] - 2025-11-26
 ### Added
-- `--version` flag in `gateway_app` to print build version and git info.
+- `--version` / `-v` flag in `gateway_app` (prints project version + git tag/SHA).
+- GitHub Actions CI (Linux + Windows): configure, build, CTest, and smoke `--version`.
+- Conditional version header flow: generate `telemetryhub/Version.h` from `Version.h.in` **only if** the repo header is absent.
 
 ### Changed
-- (placeholder) Improved startup logging.
+- CMake wiring: added `cmake/GetGit.cmake` and top-level logic to prefer the repo header, else generate into `build*/generated/...`.
+- Target includes updated to consume `THUB_VERSION_INCLUDE_DIR`.
 
 ### Fixed
-- (placeholder) Graceful shutdown race in producer/consumer.
+- MSVC compile error caused by streaming a function pointer (missing `()` on `version()` in `main_gateway.cpp`).
 
 ## [0.1.1] - 2025-11-25
 ### Added
