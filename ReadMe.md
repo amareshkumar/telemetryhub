@@ -1,3 +1,5 @@
+![C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml/badge.svg)
+
 ```text
 ## About
 
