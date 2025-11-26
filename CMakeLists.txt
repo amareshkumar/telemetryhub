@@ -5,6 +5,19 @@ project(TelemetryHub
     LANGUAGES CXX
 )
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(${CMAKE_SOURCE_DIR}/cmake/GetGit.cmake)
+get_git_info(GIT_TAG GIT_SHA)
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/include/telemetryhub/version.hpp.in
+  ${CMAKE_BINARY_DIR}/generated/telemetryhub/version.hpp
+  @ONLY
+)
+
+# Make include dir visible to all targets (or only gateway_app if you prefer)
+include_directories(${CMAKE_BINARY_DIR}/generated)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

@@ -1,10 +1,12 @@
 #include "telemetryhub/gateway/GatewayCore.h"
 #include "telemetryhub/device/DeviceUtils.h"
 #include "telemetryhub/Version.h"
+#include "telemetryhub/version.hpp"
 
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <string_view>
 
 using telemetryhub::gateway::GatewayCore;
 using telemetryhub::device::DeviceState;
@@ -13,6 +15,25 @@ using telemetryhub::device::to_string;
 
 int main()
 {
+    // Quick flag check before heavier init
+    for (int i = 1; i < argc; ++i) {
+        std::string_view arg = argv[i];
+        if (arg == "--version" || arg == "-v") {
+        std::cout
+            << "TelemetryHub gateway_app "
+            << thub::project_version()
+            << " (git: " << thub::git_tag() << ", " << thub::git_sha() << ")\n";
+        return 0;
+        }
+        if (arg == "--help" || arg == "-h") {
+        std::cout
+            << "Usage: gateway_app [options]\n"
+            << "  -v, --version   Print version and git info\n"
+            << "  -h, --help      Show this help\n";
+        return 0;
+        }
+    }
+
     using namespace std::chrono_literals;
 
     GatewayCore core;

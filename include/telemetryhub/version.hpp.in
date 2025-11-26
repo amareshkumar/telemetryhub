@@ -1,0 +1,11 @@
+#pragma once
+
+#define THUB_PROJECT_VERSION "@PROJECT_VERSION@"
+#define THUB_GIT_TAG "@GIT_TAG@"
+#define THUB_GIT_SHA "@GIT_SHA@"
+
+namespace thub {
+constexpr const char* project_version() { return THUB_PROJECT_VERSION; }
+constexpr const char* git_tag()         { return THUB_GIT_TAG; }
+constexpr const char* git_sha()         { return THUB_GIT_SHA; }
+}
