@@ -2,13 +2,13 @@ name: C++ CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   linux:
-    name: Linux (clang/gcc, ASAN+UBSAN)
+    name: Linux (ASAN+UBSAN)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (full history for git describe)
@@ -25,18 +25,15 @@ jobs:
         run: cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DENABLE_ASAN=ON -DENABLE_UBSAN=ON
 
       - name: Build
-        run: cmake --build build --config Debug -- -v
+        run: cmake --build build --config Debug -v
 
       - name: Tests (CTest)
         run: ctest --test-dir build --output-on-failure
 
-      - name: Smoke: gateway_app --version
+      - name: "Smoke: gateway_app --version"
         run: |
-          if [ -f build/gateway/gateway_app ] || [ -f build/gateway_app ]; then
-            ( [ -f build/gateway/gateway_app ] && build/gateway/gateway_app --version ) || true
-            ( [ -f build/gateway_app ] && build/gateway_app --version ) || true
-          fi
-
+          if [ -f build/gateway/gateway_app ]; then build/gateway/gateway_app --version; fi
+          if [ -f build/gateway_app ]; then build/gateway_app --version; fi
   windows:
     name: Windows (MSVC)
     runs-on: windows-latest
@@ -47,9 +44,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Ninja
-        uses: crazy-max/ghaction-chocolatey@v3
-        with:
-          args: install ninja -y
+        run: choco install ninja -y
 
       - name: Configure (MSVC)
         shell: bash
@@ -63,7 +58,7 @@ jobs:
         shell: bash
         run: ctest --test-dir build --output-on-failure
 
-      - name: Smoke: gateway_app --version
+      - name: "Smoke: gateway_app --version"
         shell: bash
         run: |
           if [ -f build/gateway/gateway_app.exe ]; then build/gateway/gateway_app.exe --version; fi
