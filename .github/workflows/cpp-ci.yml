@@ -1,0 +1,70 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  linux:
+    name: Linux (clang/gcc, ASAN+UBSAN)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for git describe)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DENABLE_ASAN=ON -DENABLE_UBSAN=ON
+
+      - name: Build
+        run: cmake --build build --config Debug -- -v
+
+      - name: Tests (CTest)
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Smoke: gateway_app --version
+        run: |
+          if [ -f build/gateway/gateway_app ] || [ -f build/gateway_app ]; then
+            ( [ -f build/gateway/gateway_app ] && build/gateway/gateway_app --version ) || true
+            ( [ -f build/gateway_app ] && build/gateway_app --version ) || true
+          fi
+
+  windows:
+    name: Windows (MSVC)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout (full history for git describe)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Ninja
+        uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          args: install ninja -y
+
+      - name: Configure (MSVC)
+        shell: bash
+        run: cmake -S . -B build -G Ninja -DBUILD_TESTING=ON
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Debug -v
+
+      - name: Tests (CTest)
+        shell: bash
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Smoke: gateway_app --version
+        shell: bash
+        run: |
+          if [ -f build/gateway/gateway_app.exe ]; then build/gateway/gateway_app.exe --version; fi
+          if [ -f build/gateway_app.exe ]; then build/gateway_app.exe --version; fi
