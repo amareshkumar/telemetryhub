@@ -8,7 +8,7 @@ on:
 
 jobs:
   linux:
-    name: Linux (ASAN+UBSAN)
+    name: Linux (clang/gcc, ASAN+UBSAN)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (full history for git describe)
