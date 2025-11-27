@@ -5,6 +5,22 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-11-26
+### Added
+- `--version` / `-v` flag in `gateway_app` (prints project version + git tag/SHA).
+- GitHub Actions CI (Linux + Windows): configure, build, CTest, and smoke `--version`.
+- Conditional version header: generate `telemetryhub/Version.h` from `Version.h.in` only if the repo header is absent.
+
+### Changed
+- CMake: added `cmake/GetGit.cmake`, prefer repo header else generate into `build*/generated/...`.
+- Target includes updated to use `THUB_VERSION_INCLUDE_DIR`.
+
+### Fixed
+- MSVC compile error (accidentally streamed function pointer `version` without `()`).
+
+
+## [Unreleased]
+
 ## [0.1.2] - 2025-11-26
 ### Added
 - `--version` / `-v` flag in `gateway_app` (prints project version + git tag/SHA).
