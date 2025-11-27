@@ -1,5 +1,6 @@
 #include "telemetryhub/gateway/GatewayCore.h"
 #include "telemetryhub/device/DeviceUtils.h"
+#include "telemetryhub/gateway/Log.h"
 
 #include <iostream>
 #include <mutex>
@@ -28,7 +29,9 @@ void GatewayCore::start()
         return;
     }
 
-    std::cout << "[GatewayCore] starting device...\n";
+    TELEMETRYHUB_LOGI("GatewayCore","starting device...");
+    TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Info, "GatewayCore", "starting device...");
+
     device_.start();
 
     producer_thread_ = std::thread(&GatewayCore::producer_loop, this);
@@ -44,8 +47,8 @@ void GatewayCore::stop()
         return;
     }
 
-    
-    std::cout << "[GatewayCore] stopping...\n";
+    // std::cout << "[GatewayCore] stopping...\n";
+    TELEMETRYHUB_LOGI("GatewayCore","stopping device...");
 
     // Tell queue no more pushes are coming
     
@@ -63,7 +66,8 @@ void GatewayCore::stop()
         consumer_thread_.join();
     }
 
-    std::cout << "[GatewayCore] stopped.\n";
+    // std::cout << "[GatewayCore] stopped.\n";
+    TELEMETRYHUB_LOGI("GatewayCore","stopped.");
 }
 
 device::DeviceState GatewayCore::device_state() const
@@ -79,7 +83,8 @@ std::optional<device::TelemetrySample> GatewayCore::latest_sample() const
 
 void GatewayCore::producer_loop()
 {
-    std::cout << "[GatewayCore::producer] thread started\n";
+    // std::cout << "[GatewayCore::producer] thread started\n";
+    TELEMETRYHUB_LOGI("GatewayCore","[producer] thread started");
 
     while (running_)
     {
@@ -90,9 +95,10 @@ void GatewayCore::producer_loop()
             if (state == device::DeviceState::SafeState ||
                 state == device::DeviceState::Error)
             {
-                std::cout << "[producer] device state="
-                          << device::to_string(state)
-                          << ", exiting producer loop\n";
+                // std::cout << "[producer] device state="
+                //           << device::to_string(state)
+                //           << ", exiting producer loop\n";
+                TELEMETRYHUB_LOGI("GatewayCore", (std::string("[producer] device state=") + device::to_string(state) + ", exiting producer loop").c_str());
                 break;
             }
 
@@ -112,19 +118,22 @@ void GatewayCore::producer_loop()
         }
     }
 
-    std::cout << "[GatewayCore::producer] exiting\n";
+    // std::cout << "[GatewayCore::producer] exiting\n";
+    TELEMETRYHUB_LOGI("GatewayCore","[producer] exiting");
 }
 
 void GatewayCore::consumer_loop()
 {
-    std::cout << "[GatewayCore::consumer] thread started\n";
+    // std::cout << "[GatewayCore::consumer] thread started\n";
+    TELEMETRYHUB_LOGI("GatewayCore","[consumer] thread started");
 
     while (true)
     {
         auto sample_opt = queue_.pop();
         if (!sample_opt)
         {
-            std::cout << "[consumer] queue shutdown, exiting consumer loop\n";
+            // std::cout << "[consumer] queue shutdown, exiting consumer loop\n";
+            TELEMETRYHUB_LOGI("GatewayCore","[consumer] queue shutdown, exiting consumer loop");
             break;
         }
 
@@ -133,12 +142,17 @@ void GatewayCore::consumer_loop()
             latest_ = *sample_opt;
         }
 
-        std::cout << "[consumer] got sample #" << sample_opt->sequence_id
-                  << " value=" << sample_opt->value
-                  << " " << sample_opt->unit << "\n";
+        // std::cout << "[consumer] got sample #" << sample_opt->sequence_id
+        //           << " value=" << sample_opt->value
+        //           << " " << sample_opt->unit << "\n";
+        TELEMETRYHUB_LOGI("GatewayCore",
+            (std::string("[consumer] got sample #") + std::to_string(sample_opt->sequence_id) +
+             " value=" + std::to_string(sample_opt->value) + " " + sample_opt->unit).c_str());  
+                  
     }
 
-    std::cout << "[GatewayCore::consumer] exiting\n";
+    // std::cout << "[GatewayCore::consumer] exiting\n";
+    TELEMETRYHUB_LOGI("GatewayCore","[consumer] exiting");
 }
 
 }   // namespace telemetryhub::gateway 
