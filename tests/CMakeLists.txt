@@ -27,6 +27,10 @@ add_executable(unit_tests
 #     PRIVATE device
 # )
 
+add_executable(test_gateway_e2e tests/test_gateway_e2e.cpp)
+target_link_libraries(test_gateway_e2e PRIVATE gateway_core GTest::gtest_main)
+gtest_discover_tests(test_gateway_e2e)
+
 target_link_libraries(unit_tests
     PRIVATE
         device
