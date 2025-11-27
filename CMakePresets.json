@@ -1,0 +1,40 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 23, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "vs2026-debug",
+      "displayName": "VS 2026 (x64, Debug)",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build_vs26",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "linux-ninja-debug",
+      "displayName": "Linux Ninja (Debug)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "vs2026-debug", "configurePreset": "vs2026-debug" },
+    { "name": "linux-ninja-debug", "configurePreset": "linux-ninja-debug" }
+  ],
+
+  "testPresets": [
+    { "name": "vs2026-debug", "configurePreset": "vs2026-debug" },
+    { "name": "linux-ninja-debug", "configurePreset": "linux-ninja-debug" }
+  ]
+}
