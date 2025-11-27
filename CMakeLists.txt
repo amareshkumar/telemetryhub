@@ -6,6 +6,16 @@ project(TelemetryHub
 )
 
 include(CTest)
+
+# Ensure RUN_TESTS builds test executables first (use multiline blocks to avoid parse errors)
+if(TARGET RUN_TESTS AND TARGET unit_tests)
+  add_dependencies(RUN_TESTS unit_tests)
+endif()
+if(TARGET RUN_TESTS AND TARGET test_gateway_e2e)
+  add_dependencies(RUN_TESTS test_gateway_e2e)
+endif()
+
+# Include custom CMake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(GetGit)   # loads thub_get_git_info()
 
