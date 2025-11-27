@@ -67,3 +67,11 @@ add_test(
     COMMAND unit_tests
 )
 # add_test(NAME telemetryhub_tests COMMAND telemetryhub_tests)
+add_test(
+  NAME log_file_sink
+  COMMAND ${CMAKE_COMMAND}
+          -DBIN_DIR=${CMAKE_BINARY_DIR}
+          -DCONFIG=$<CONFIG>
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/log_check.cmake
+)
+set_tests_properties(log_file_sink PROPERTIES TIMEOUT 10)
