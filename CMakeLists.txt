@@ -5,6 +5,7 @@ project(TelemetryHub
     LANGUAGES CXX
 )
 
+include(CTest)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(GetGit)   # loads thub_get_git_info()
 
