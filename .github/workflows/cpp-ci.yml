@@ -63,3 +63,14 @@ jobs:
         run: |
           if [ -f build/gateway/gateway_app.exe ]; then build/gateway/gateway_app.exe --version; fi
           if [ -f build/gateway_app.exe ]; then build/gateway_app.exe --version; fi
+  linux-tsan:
+    name: Linux (TSan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build
+      - run: cmake -S . -B build-tsan -G Ninja -DBUILD_TESTING=ON -DENABLE_TSAN=ON -DENABLE_ASAN=OFF -DENABLE_UBSAN=OFF
+      - run: cmake --build build-tsan --config Debug -v
+      - run: ctest --test-dir build-tsan --output-on-failure
+

@@ -16,6 +16,10 @@ It simulates a pipeline with:
 
 Focus areas: RAII, pImpl, state machines, producer–consumer queues, thread coordination, safe shutdown.
 
+## add log and e2e test
+./build/gateway/gateway_app --log-level debug
+./build/gateway/gateway_app --log-level trace --log-file thub.log
+
 ## Folder Structure
 ```text
 telemetryhub/
