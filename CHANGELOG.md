@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 ### Added
+- CTest `log_file_sink`: verifies `--log-level` filtering and `--log-file` sink in gateway_app.
+
+### Added
 - Header-only logger (`telemetryhub::Logger`) with levels and optional file sink.
 - `--log-level` and `--log-file` flags in `gateway_app`.
 - Ctrl-C graceful shutdown path.
