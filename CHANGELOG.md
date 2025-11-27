@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
+### Added
+- Header-only logger (`telemetryhub::Logger`) with levels and optional file sink.
+- `--log-level` and `--log-file` flags in `gateway_app`.
+- Ctrl-C graceful shutdown path.
+- E2E test: start → run → stop.
 
-## [0.1.3] - 2025-11-26
+## [Released]
+## [0.1.3] - 2025-11-27
 ### Added
 - `--version` / `-v` flag in `gateway_app` (prints project version + git tag/SHA).
 - GitHub Actions CI (Linux + Windows): configure, build, CTest, and smoke `--version`.
