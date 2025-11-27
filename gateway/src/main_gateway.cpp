@@ -45,6 +45,12 @@ int main(int argc, char* argv[])
         if (!telemetryhub::Logger::instance().open_file(log_file))
         TELEMETRYHUB_LOGW("main", "failed to open log file; continuing with stdout");
     }
+    TELEMETRYHUB_LOGI("main","gateway starting");
+    // after setting level and opening file:
+TELEMETRYHUB_LOGI("main", "logger online (console)");
+TELEMETRYHUB_LOGD("main", "debug visible only at --log-level debug+");
+TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at --log-level trace");
+    telemetryhub::print_version();
 
     std::signal(SIGINT, on_sigint); // Ctrl-C (Windows console gets SIGINT too)
 
