@@ -1,12 +1,13 @@
-#include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
-#include "GatewayCore.h"
+#include <iostream>
+#include "telemetryhub/gateway/GatewayCore.h"
 
-TEST(GatewayE2E, StartRunStop) {
-  GatewayCore core;
+int main() {
+  telemetryhub::gateway::GatewayCore core;
   core.start();
   std::this_thread::sleep_for(std::chrono::milliseconds(300));
   core.stop();
-  SUCCEED();
+  std::cout << "Gateway E2E smoke passed" << std::endl;
+  return 0;
 }
