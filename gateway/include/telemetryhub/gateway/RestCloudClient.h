@@ -1,5 +1,6 @@
 #pragma once
-#include "ICloudClient.h"
+#include <string>
+#include "telemetryhub/gateway/ICloudClient.h"
 
 namespace telemetryhub::gateway {
 
@@ -13,7 +14,7 @@ namespace telemetryhub::gateway {
         ~RestCloudClient() override = default;
 
         void push_sample(const telemetryhub::device::TelemetrySample& sample) override;
-        void push_status(device::DeviceState state) override;
+        void push_status(telemetryhub::device::DeviceState state) override;
     private:
         std::string endpoint_url_;
     };
