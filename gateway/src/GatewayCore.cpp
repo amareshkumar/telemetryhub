@@ -6,6 +6,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+#include "GatewayCore.h"
 using namespace std::chrono_literals; // enable 100ms duration literal
 
 namespace telemetryhub::gateway {
@@ -81,6 +82,11 @@ std::optional<device::TelemetrySample> GatewayCore::latest_sample() const
     return latest_;
 }
 
+TelemetryQueue &GatewayCore::queue()
+{
+    // TODO: insert return statement here
+    return queue_;
+}
 void GatewayCore::producer_loop()
 {
     // std::cout << "[GatewayCore::producer] thread started\n";
@@ -88,6 +94,11 @@ void GatewayCore::producer_loop()
 
     while (running_)
     {
+        if (auto maybe = device_.read_sample()) {      // keep your API as-is
+            metrics_.produced++;
+            if (queue_.try_push(*maybe)) metrics_.accepted++;
+        }
+
         auto state = device_.state();
 
         if (state != device::DeviceState::Measuring)
@@ -130,6 +141,12 @@ void GatewayCore::consumer_loop()
     while (true)
     {
         auto sample_opt = queue_.pop();
+        device::TelemetrySample s{};
+        if (queue_.try_pop(s, /*timeout_ms*/100)) {
+            metrics_.consumed++;
+            sample_opt = s;
+        }
+
         if (!sample_opt)
         {
             // std::cout << "[consumer] queue shutdown, exiting consumer loop\n";

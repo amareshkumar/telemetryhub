@@ -8,6 +8,10 @@
 
 namespace telemetryhub::gateway {
 
+struct GatewayMetrics {
+  std::atomic<uint64_t> produced{0}, accepted{0}, consumed{0};
+};
+
 class GatewayCore
 {
 public:
@@ -22,6 +26,9 @@ public:
 
     device::DeviceState device_state() const;
     std::optional<device::TelemetrySample> latest_sample() const;
+    
+    TelemetryQueue& queue();  
+    const GatewayMetrics& metrics() const { return metrics_; }
 
 private:
     void producer_loop();
@@ -36,6 +43,7 @@ private:
     std::atomic<bool> running_{false};
     std::thread producer_thread_;
     std::thread consumer_thread_;
+    GatewayMetrics metrics_;
 };
 
 } // namespace telemetryhub::gateway
