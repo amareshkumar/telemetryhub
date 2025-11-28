@@ -188,3 +188,9 @@ git push --follow-tags
 ```
 ::contentReference[oaicite:0]{index=0}
 ```
+
+original plan: 
+Purpose: Cloud client interface abstraction.
+Benefits: decoupling, testability, swappable transports, resilience patterns (retry/backoff), CI friendliness.
+Design choices: synchronous calls for now, cadence-based sample pushes, transition-based status pushes, error swallow/log in client.
+Future work: batching, async queue, exponential backoff, retry budget, circuit breaker, metrics for cloud success/fail.

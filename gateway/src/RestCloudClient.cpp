@@ -1,4 +1,4 @@
-#include "telemetryhub/gateway/ICloudClient.h"
+#include "telemetryhub/gateway/RestCloudClient.h"
 #include "telemetryhub/gateway/Log.h"
 #include "telemetryhub/device/DeviceUtils.h"
 
