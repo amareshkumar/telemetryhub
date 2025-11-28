@@ -5,6 +5,7 @@
 #include <optional>
 #include "telemetryhub/device/Device.h"
 #include "telemetryhub/gateway/TelemetryQueue.h"
+#include "telemetryhub/gateway/ICloudClient.h"
 
 namespace telemetryhub::gateway {
 
@@ -23,6 +24,11 @@ public:
     device::DeviceState device_state() const;
     std::optional<device::TelemetrySample> latest_sample() const;
 
+    void set_cloud_client(std::shared_ptr<ICloudClient> client, size_t interval = 4){    
+        cloud_client_ = std::move(client); 
+        cloud_sample_interval_ = std::max<size_t>(1, interval); 
+    }
+
 private:
     void producer_loop();
     void consumer_loop();
@@ -36,6 +42,11 @@ private:
     std::atomic<bool> running_{false};
     std::thread producer_thread_;
     std::thread consumer_thread_;
+    // Cloud client integration
+    size_t cloud_sample_interval_{5};
+    std::shared_ptr<ICloudClient> cloud_client_{nullptr};
+    uint64_t accepted_counter_{0};
+    device::DeviceState prev_state_{device::DeviceState::Idle};
 };
 
 } // namespace telemetryhub::gateway
