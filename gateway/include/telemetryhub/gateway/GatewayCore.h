@@ -8,8 +8,9 @@
 
 namespace telemetryhub::gateway {
 
+// Public snapshot of gateway metrics (plain integers)
 struct GatewayMetrics {
-  std::atomic<uint64_t> produced{0}, accepted{0}, consumed{0};
+  uint64_t produced{0}, accepted{0}, consumed{0};
 };
 
 class GatewayCore
@@ -28,7 +29,8 @@ public:
     std::optional<device::TelemetrySample> latest_sample() const;
     
     TelemetryQueue& queue();  
-    const GatewayMetrics& metrics() const { return metrics_; }
+    // Returns a snapshot of metrics (does not expose atomics)
+    GatewayMetrics metrics() const;
 
 private:
     void producer_loop();
@@ -43,7 +45,12 @@ private:
     std::atomic<bool> running_{false};
     std::thread producer_thread_;
     std::thread consumer_thread_;
-    GatewayMetrics metrics_;
+    // Internal atomic metrics storage
+    struct AtomicGatewayMetrics {
+      std::atomic<uint64_t> produced{0};
+      std::atomic<uint64_t> accepted{0};
+      std::atomic<uint64_t> consumed{0};
+    } metrics_;
 };
 
 } // namespace telemetryhub::gateway

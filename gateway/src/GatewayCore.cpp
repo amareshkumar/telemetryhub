@@ -67,7 +67,27 @@ void GatewayCore::stop()
         consumer_thread_.join();
     }
 
-    // std::cout << "[GatewayCore] stopped.\n";
+    // Emit shutdown summary with gateway + queue metrics snapshot
+    const auto g = metrics();
+    const auto &qm = queue_.metrics();
+    const auto q_pushes = qm.pushes.load(std::memory_order_relaxed);
+    const auto q_pops = qm.pops.load(std::memory_order_relaxed);
+    const auto q_drops = qm.drops.load(std::memory_order_relaxed);
+    const auto q_hwm = qm.highWatermark.load(std::memory_order_relaxed);
+    const auto q_size = queue_.size();
+    const auto q_capacity = queue_.capacity();
+    TELEMETRYHUB_LOGI(
+        "GatewayCore",
+        (std::string("[shutdown] produced=") + std::to_string(g.produced) +
+         " accepted=" + std::to_string(g.accepted) +
+         " consumed=" + std::to_string(g.consumed) +
+         " | queue pushes=" + std::to_string(q_pushes) +
+         " pops=" + std::to_string(q_pops) +
+         " drops=" + std::to_string(q_drops) +
+         " hwm=" + std::to_string(q_hwm) +
+         " size=" + std::to_string(q_size) +
+         " cap=" + std::to_string(q_capacity)).c_str());
+
     TELEMETRYHUB_LOGI("GatewayCore","stopped.");
 }
 
@@ -94,34 +114,26 @@ void GatewayCore::producer_loop()
 
     while (running_)
     {
-        if (auto maybe = device_.read_sample()) {      // keep your API as-is
-            metrics_.produced++;
-            if (queue_.try_push(*maybe)) metrics_.accepted++;
-        }
-
         auto state = device_.state();
 
         if (state != device::DeviceState::Measuring)
         {
-            if (state == device::DeviceState::SafeState ||
-                state == device::DeviceState::Error)
+            if (state == device::DeviceState::SafeState || state == device::DeviceState::Error)
             {
-                // std::cout << "[producer] device state="
-                //           << device::to_string(state)
-                //           << ", exiting producer loop\n";
                 TELEMETRYHUB_LOGI("GatewayCore", (std::string("[producer] device state=") + device::to_string(state) + ", exiting producer loop").c_str());
                 break;
             }
-
-            // Idle or transitioning – wait a bit
             std::this_thread::sleep_for(100ms);
             continue;
         }
 
-        auto sample_opt = device_.read_sample();
-        if (sample_opt)
+        if (auto sample_opt = device_.read_sample())
         {
-            queue_.push(*sample_opt);
+            metrics_.produced.fetch_add(1, std::memory_order_relaxed);
+            if (queue_.try_push(*sample_opt))
+            {
+                metrics_.accepted.fetch_add(1, std::memory_order_relaxed);
+            }
         }
         else
         {
@@ -140,36 +152,40 @@ void GatewayCore::consumer_loop()
 
     while (true)
     {
-        auto sample_opt = queue_.pop();
         device::TelemetrySample s{};
-        if (queue_.try_pop(s, /*timeout_ms*/100)) {
-            metrics_.consumed++;
-            sample_opt = s;
+        if (queue_.try_pop(s, /*timeout_ms*/100))
+        {
+            metrics_.consumed.fetch_add(1, std::memory_order_relaxed);
+            {
+                std::lock_guard lock(latest_mutex_);
+                latest_ = s;
+            }
+            TELEMETRYHUB_LOGI(
+                "GatewayCore",
+                (std::string("[consumer] got sample #") + std::to_string(s.sequence_id) +
+                 " value=" + std::to_string(s.value) + " " + s.unit).c_str());
+            continue;
         }
 
-        if (!sample_opt)
+        // timeout: if we're stopping and the queue is empty, exit
+        if (!running_ && queue_.size() == 0)
         {
-            // std::cout << "[consumer] queue shutdown, exiting consumer loop\n";
-            TELEMETRYHUB_LOGI("GatewayCore","[consumer] queue shutdown, exiting consumer loop");
+            TELEMETRYHUB_LOGI("GatewayCore","[consumer] queue drained after shutdown, exiting consumer loop");
             break;
         }
-
-        {
-            std::lock_guard lock(latest_mutex_);
-            latest_ = *sample_opt;
-        }
-
-        // std::cout << "[consumer] got sample #" << sample_opt->sequence_id
-        //           << " value=" << sample_opt->value
-        //           << " " << sample_opt->unit << "\n";
-        TELEMETRYHUB_LOGI("GatewayCore",
-            (std::string("[consumer] got sample #") + std::to_string(sample_opt->sequence_id) +
-             " value=" + std::to_string(sample_opt->value) + " " + sample_opt->unit).c_str());  
-                  
     }
 
     // std::cout << "[GatewayCore::consumer] exiting\n";
     TELEMETRYHUB_LOGI("GatewayCore","[consumer] exiting");
+}
+
+GatewayMetrics GatewayCore::metrics() const
+{
+    GatewayMetrics snap;
+    snap.produced = metrics_.produced.load(std::memory_order_relaxed);
+    snap.accepted = metrics_.accepted.load(std::memory_order_relaxed);
+    snap.consumed = metrics_.consumed.load(std::memory_order_relaxed);
+    return snap;
 }
 
 }   // namespace telemetryhub::gateway 
