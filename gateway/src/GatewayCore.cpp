@@ -32,6 +32,7 @@ void GatewayCore::start()
     TELEMETRYHUB_LOGI("GatewayCore","starting device...");
     TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Info, "GatewayCore", "starting device...");
 
+    prev_state_ = device_.state();
     device_.start();
 
     producer_thread_ = std::thread(&GatewayCore::producer_loop, this);
@@ -89,6 +90,15 @@ void GatewayCore::producer_loop()
     while (running_)
     {
         auto state = device_.state();
+        // Push status on transitions
+        if (cloud_client_ && state != prev_state_)
+        {
+            try { cloud_client_->push_status(state); }
+            catch (const std::exception& e) {
+                TELEMETRYHUB_LOGI("GatewayCore", (std::string("cloud push_status failed: ") + e.what()).c_str());
+            }
+            prev_state_ = state;
+        }
 
         if (state != device::DeviceState::Measuring)
         {
@@ -110,7 +120,16 @@ void GatewayCore::producer_loop()
         auto sample_opt = device_.read_sample();
         if (sample_opt)
         {
+            // Blocking push in current queue implementation; treat as accepted
             queue_.push(*sample_opt);
+            accepted_counter_++;
+            if (cloud_client_ && (accepted_counter_ % cloud_sample_interval_ == 0))
+            {
+                try { cloud_client_->push_sample(*sample_opt); }
+                catch (const std::exception& e) {
+                    TELEMETRYHUB_LOGI("GatewayCore", (std::string("cloud push_sample failed: ") + e.what()).c_str());
+                }
+            }
         }
         else
         {

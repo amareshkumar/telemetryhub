@@ -24,6 +24,13 @@ add_executable(test_gateway_e2e
   ${CMAKE_CURRENT_SOURCE_DIR}/test_gateway_e2e.cpp
 )
 
+# add_executable(cloud_client_test
+#   ${CMAKE_CURRENT_SOURCE_DIR}/cloud_client_test.cpp
+# )
+add_executable(cloud_client_tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/cloud_client_tests.cpp
+)
+
 target_link_libraries(test_gateway_e2e
   PRIVATE
     gateway_core               # your library/target under test
@@ -35,22 +42,6 @@ add_executable(unit_tests
     test_device.cpp
     test_queue.cpp
 )
-
-# add_executable(raii_demo
-#     raii_demo.cpp
-# )
-
-# target_link_libraries(raii_demo
-#     PRIVATE device
-# )
-
-# add_executable(device_smoke
-#     device_smoke.cpp
-# )
-
-# target_link_libraries(device_smoke
-#     PRIVATE device
-# )
 
 target_link_libraries(unit_tests
     PRIVATE
@@ -75,3 +66,12 @@ add_test(
           -P ${CMAKE_CURRENT_SOURCE_DIR}/log_check.cmake
 )
 set_tests_properties(log_file_sink PROPERTIES TIMEOUT 10)
+
+add_test(NAME cloud_client_tests COMMAND cloud_client_tests)
+target_link_libraries(cloud_client_tests
+    PRIVATE
+        device
+        gateway_core
+  GTest::gtest
+  GTest::gtest_main
+)
