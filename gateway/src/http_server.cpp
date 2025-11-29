@@ -1,4 +1,8 @@
+#if defined(USE_HTTPLIB_STUB)
 #include "third_party/httplib_stub.h"
+#else
+#include "httplib.h"
+#endif
 #include "telemetryhub/gateway/GatewayCore.h"
 #include "telemetryhub/gateway/Log.h"
 #include "telemetryhub/device/DeviceUtils.h"
