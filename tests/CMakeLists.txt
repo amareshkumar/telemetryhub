@@ -24,6 +24,10 @@ add_executable(test_gateway_e2e
   ${CMAKE_CURRENT_SOURCE_DIR}/test_gateway_e2e.cpp
 )
 
+add_executable(mock_cloud_client
+  ${CMAKE_CURRENT_SOURCE_DIR}/mock_cloud_client.cpp
+)
+
 target_link_libraries(test_gateway_e2e
   PRIVATE
     gateway_core               # your library/target under test
@@ -75,3 +79,12 @@ add_test(
           -P ${CMAKE_CURRENT_SOURCE_DIR}/log_check.cmake
 )
 set_tests_properties(log_file_sink PROPERTIES TIMEOUT 10)
+
+add_test(NAME mock_cloud_client COMMAND mock_cloud_client)
+target_link_libraries(mock_cloud_client
+    PRIVATE
+        device
+        gateway_core
+  GTest::gtest
+  GTest::gtest_main
+)
