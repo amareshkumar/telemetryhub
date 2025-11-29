@@ -1,6 +1,7 @@
 #pragma once
-#include "telemetryhub/gateway/RestCloudClient.h"
+#include "telemetryhub/gateway/ICloudClient.h"
 #include <vector>
+#include <mutex>
 
 namespace telemetryhub::gateway {
 
@@ -12,14 +13,18 @@ namespace telemetryhub::gateway {
 
         void push_sample(const telemetryhub::device::TelemetrySample& sample) override
         {
-            // Mock implementation: do nothing or log to console
+            std::lock_guard<std::mutex> lock(mutex_);
+            samples_.push_back(sample);
         }
 
         void push_status(telemetryhub::device::DeviceState state) override
         {
-            // Mock implementation: do nothing or log to console
+            std::lock_guard<std::mutex> lock(mutex_);
+            statuses_.push_back(state);
         }
         private:
         std::vector<telemetryhub::device::TelemetrySample> samples_;
+        std::vector<telemetryhub::device::DeviceState> statuses_;
+        std::mutex mutex_;
     };
 }
