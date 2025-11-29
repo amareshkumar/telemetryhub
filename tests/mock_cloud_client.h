@@ -22,7 +22,22 @@ namespace telemetryhub::gateway {
             std::lock_guard<std::mutex> lock(mutex_);
             statuses_.push_back(state);
         }
-        private:
+    public:
+        // Thread-safe accessors for tests
+        size_t sample_count() const {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return samples_.size();
+        }
+        size_t status_count() const {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return statuses_.size();
+        }
+        std::vector<telemetryhub::device::DeviceState> statuses_snapshot() const {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return statuses_;
+        }
+
+    private:
         std::vector<telemetryhub::device::TelemetrySample> samples_;
         std::vector<telemetryhub::device::DeviceState> statuses_;
         std::mutex mutex_;
