@@ -1,5 +1,5 @@
 
-#include "tests/mock_cloud_client.h"
+#include "mock_cloud_client.h"
 #include <gtest/gtest.h>
 
 using namespace telemetryhub::gateway;
