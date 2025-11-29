@@ -68,7 +68,7 @@ add_test(
 set_tests_properties(log_file_sink PROPERTIES TIMEOUT 10)
 
 add_test(NAME cloud_client_tests COMMAND cloud_client_tests)
-target_link_libraries(cloud_client_test
+target_link_libraries(cloud_client_tests
     PRIVATE
         device
         gateway_core
