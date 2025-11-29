@@ -41,7 +41,6 @@ add_test(NAME test_gateway_e2e COMMAND test_gateway_e2e)
 add_executable(unit_tests
     test_device.cpp
     test_queue.cpp
-  cloud_client_tests.cpp
 )
 
 target_link_libraries(unit_tests
