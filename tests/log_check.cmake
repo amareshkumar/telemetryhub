@@ -33,7 +33,7 @@ file(REMOVE "${LOG_FILE}")
 
 # Run the app at TRACE and write to file
 execute_process(
-  COMMAND "${GATEWAY_APP}" --log-level trace --log-file "${LOG_FILE}"
+  COMMAND "${GATEWAY_APP}" --log-level trace --log-file "${LOG_FILE}" --version
   WORKING_DIRECTORY "${BIN_DIR}"
   TIMEOUT 5
   RESULT_VARIABLE run_rc
