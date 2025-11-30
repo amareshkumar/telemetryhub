@@ -82,33 +82,22 @@ add_subdirectory(gateway)
 
 target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
 
-# cpp-httplib integration via FetchContent
+# cpp-httplib integration via FetchContent, but avoid its CMake logic
 include(FetchContent)
 
- # Hard-disable optional deps at CMake level so its targets do not link
- # to zstd/brotli/zlib/openssl on any toolchain.
- set(HTTPLIB_USE_ZLIB OFF CACHE BOOL "Disable zlib in httplib" FORCE)
- set(HTTPLIB_USE_BROTLI OFF CACHE BOOL "Disable brotli in httplib" FORCE)
- set(HTTPLIB_USE_ZSTD OFF CACHE BOOL "Disable zstd in httplib" FORCE)
- set(HTTPLIB_USE_OPENSSL OFF CACHE BOOL "Disable openssl in httplib" FORCE)
-
 FetchContent_Declare(
-  httplib
+  httplib_src
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
   GIT_TAG v0.28.0
 )
-FetchContent_GetProperties(httplib)
-# Include the fetched httplib.h in gateway_app
-if(NOT httplib_POPULATED)
-  FetchContent_MakeAvailable(httplib)
+FetchContent_GetProperties(httplib_src)
+if(NOT httplib_src_POPULATED)
+  FetchContent_Populate(httplib_src)
 endif()
- 
-# Use existing httplib target if provided by FetchContent; otherwise define one
-if(NOT TARGET httplib)
-  add_library(httplib INTERFACE)
-  # Use normal include (not SYSTEM) to prevent /external:I injection
-  target_include_directories(httplib INTERFACE ${httplib_SOURCE_DIR})
-endif()
+
+# Define a simple INTERFACE target that points to the header path
+add_library(httplib INTERFACE)
+target_include_directories(httplib INTERFACE ${httplib_src_SOURCE_DIR})
 target_link_libraries(gateway_app PRIVATE httplib)
 ## Hard-disable optional cpp-httplib features that may inject unwanted libs/defs
 target_compile_definitions(gateway_app PRIVATE 
