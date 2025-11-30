@@ -1,0 +1,52 @@
+name: Windows C++ CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, day9_original_plan ]
+
+jobs:
+  build-and-test-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print runner info
+        run: |
+          Get-ChildItem Env: | Sort-Object Name | Format-Table -AutoSize | Out-String
+
+      - name: Sanitize MSYS/GNU env paths
+        run: |
+          $vars = @('INCLUDE','LIB','LIBPATH','CPATH','PKG_CONFIG_PATH','CPLUS_INCLUDE_PATH','C_INCLUDE_PATH')
+          foreach ($v in $vars) {
+            if ($env:$v -and $env:$v -match 'msys64') {
+              Write-Host "Clearing $v due to msys64 contamination"
+              Remove-Item Env:\$v
+            }
+          }
+
+      - name: Configure (CMake, VS Generator, x64)
+        run: |
+          cmake -S . -B build_vs_ci -G "Visual Studio 18 2026" -A x64
+
+      - name: Build Release gateway_app
+        run: |
+          cmake --build build_vs_ci --target gateway_app --config Release -- /m
+
+      - name: Run tests (ctest)
+        run: |
+          ctest -C Release --test-dir build_vs_ci -R http_integration --output-on-failure
+
+      - name: Archive logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ci-logs
+          path: |
+            build_vs_ci/**/CMakeFiles/CMakeOutput.log
+            build_vs_ci/**/CMakeFiles/CMakeError.log
+            build_vs_ci/**/Testing/**
