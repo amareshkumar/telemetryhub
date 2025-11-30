@@ -21,6 +21,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build
 
+      - name: Clean previous build dirs
+        run: |
+          rm -rf build build_asan build_tsan
+
       - name: Configure (Preset)
         run: cmake --preset linux-ninja-asan-ubsan
 
@@ -70,6 +74,9 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build
+      - name: Clean previous build dirs
+        run: |
+          rm -rf build build_asan build_tsan
       - run: cmake --preset linux-ninja-tsan
       - run: cmake --build --preset linux-ninja-tsan -v
       - run: ctest --preset linux-ninja-tsan --output-on-failure
