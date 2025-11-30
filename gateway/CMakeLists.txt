@@ -23,20 +23,12 @@ target_link_libraries(gateway_app
 )
 target_include_directories(gateway_app 
     PRIVATE 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include)
-option(USE_HTTPLIB_STUB "Use local httplib stub instead of real cpp-httplib" ON)
-# When using the stub, include only our local third_party path; otherwise rely on
-# the interface target provided by FetchContent in the root CMakeLists.
-if(USE_HTTPLIB_STUB)
-    target_include_directories(gateway_app PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/third_party
-    )
-    target_compile_definitions(gateway_app PRIVATE USE_HTTPLIB_STUB=1)
-else()
-    target_include_directories(gateway_app PRIVATE 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
+)
+## Use real cpp-httplib provided by FetchContent at the root. The `httplib`
+## interface target must already exist (declared in the top-level CMakeLists).
+if(TARGET httplib)
+    target_link_libraries(gateway_app PRIVATE httplib)
 endif()
-# todo: pass -DUSE_HTTPLIB_STUB=OFF to use real httplib via FetchContent
+
 

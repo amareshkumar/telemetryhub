@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
+## [0.9.0] - 2025-11-30
+- Added: Local REST API in gateway_app using real cpp-httplib (/status, /start, /stop).
+- Fixed: Windows/MSVC build contamination from MSYS headers; standardized Developer PowerShell and x64 host.
+- Added: Windows quick start in readme.md with PowerShell examples.
+- Added: Integration test http_integration validating HTTP endpoints.
+- Changed: Removed httplib stub toggle and vendor includes; rely on CMake FetchContent.
+
+## [Unreleased]
 ### Added
 - CTest `log_file_sink`: verifies `--log-level` filtering and `--log-file` sink in gateway_app.
 

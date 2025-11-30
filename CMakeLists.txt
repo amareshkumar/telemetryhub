@@ -7,6 +7,24 @@ project(TelemetryHub
 
 include(CTest)
 
+# Sanitize environment to avoid MSYS headers/libs leaking into MSVC builds
+foreach(_var IN ITEMS INCLUDE LIB LIBPATH CPATH PKG_CONFIG_PATH CPLUS_INCLUDE_PATH C_INCLUDE_PATH)
+  if(DEFINED ENV{${_var}})
+    string(FIND "$ENV{${_var}}" "msys64" _msys_pos)
+    if(_msys_pos GREATER -1)
+      message(WARNING "Detected MSYS in $ENV{${_var}}; clearing for this configure to protect MSVC build.")
+      unset(ENV{${_var}})
+    endif()
+  endif()
+endforeach()
+
+# In addition, prevent CMake find_* from consulting system environment paths
+set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
+# And ignore common MSYS roots so generated projects don't pick them up
+list(APPEND CMAKE_SYSTEM_IGNORE_PATH "C:/msys64" "C:/msys64/ucrt64" "C:/msys64/mingw64" 
+                                  "C:/msys64/usr" 
+                                  "/msys64" "/usr" "/usr/local")
+
 # Ensure RUN_TESTS builds test executables first (use multiline blocks to avoid parse errors)
 if(TARGET RUN_TESTS AND TARGET unit_tests)
   add_dependencies(RUN_TESTS unit_tests)
@@ -48,6 +66,9 @@ include_directories("${THUB_VERSION_INCLUDE_DIR}")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+## Prevent MSVC from emitting /external:I entries for system includes, which
+## can accidentally pick up MSYS include paths from the environment.
+set(CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS OFF)
 
 # Optionally: warnings, sanitizers, etc. in cmake/ConfigWarnings.cmake
 # include(cmake/ConfigWarnings.cmake)
@@ -63,6 +84,13 @@ target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
 
 # cpp-httplib integration via FetchContent
 include(FetchContent)
+
+# Force-disable optional backends that could pull MSYS libraries on Windows to fix the issue with CI builds
+set(HTTPLIB_IS_USING_ZSTD OFF CACHE BOOL "Disable Zstd to avoid non-MSVC libs" FORCE)
+set(HTTPLIB_USE_OPENSSL OFF CACHE BOOL "Disable OpenSSL auto-linking" FORCE)
+set(HTTPLIB_USE_ZLIB OFF CACHE BOOL "Disable zlib auto-linking" FORCE)
+set(HTTPLIB_USE_BROTLI OFF CACHE BOOL "Disable brotli auto-linking" FORCE)
+
 FetchContent_Declare(
   httplib
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
@@ -76,10 +104,15 @@ endif()
 # Use existing httplib target if provided by FetchContent; otherwise define one
 if(NOT TARGET httplib)
   add_library(httplib INTERFACE)
-  # Mark as SYSTEM to avoid interfering with MSVC standard headers include order
-  target_include_directories(httplib SYSTEM INTERFACE ${httplib_SOURCE_DIR})
+  # Use normal include (not SYSTEM) to prevent /external:I injection
+  target_include_directories(httplib INTERFACE ${httplib_SOURCE_DIR})
 endif()
 target_link_libraries(gateway_app PRIVATE httplib)
+## Hard-disable optional cpp-httplib features that may inject unwanted libs/defs
+target_compile_definitions(gateway_app PRIVATE 
+  CPPHTTPLIB_ZSTD_SUPPORT=0 
+  CPPHTTPLIB_USE_NON_BLOCKING_GETADDRINFO=0
+)
 
 if (BUILD_GUI)
     # add_subdirectory(gui)

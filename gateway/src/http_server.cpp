@@ -1,8 +1,4 @@
-#if defined(USE_HTTPLIB_STUB)
-#include "third_party/httplib_stub.h"
-#else
 #include <httplib.h>
-#endif
 
 #include "telemetryhub/gateway/GatewayCore.h"
 #include "telemetryhub/gateway/Log.h"
@@ -56,7 +52,6 @@ int run_http_server(unsigned short port) {
   });
 
   TELEMETRYHUB_LOGI("http", (std::string("Listening on port ") + std::to_string(port)).c_str());
-  // Stub listen (no-op in stub); replace with real cpp-httplib later.
   svr.listen("0.0.0.0", static_cast<int>(port));
   return 0;
 }

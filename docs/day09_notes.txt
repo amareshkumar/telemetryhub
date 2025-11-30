@@ -1,0 +1,36 @@
+Interview prep notes — HTTP integration (cpp-httplib)
+-----------------------------------------------------
+
+Key talking points:
+- Clear separation of concerns: `GatewayCore` owns device/queue; HTTP layer only orchestrates start/stop/status.
+- Header-only dependency via CMake FetchContent: avoids vendoring; improves reproducibility.
+- MSVC vs MSYS on Windows: isolate toolchains (Developer PowerShell, host=x64); watch PATH contamination.
+- Minimal REST surface for demo: `/status`, `/start`, `/stop` with JSON responses.
+- Graceful shutdown: background threads join; server stops cleanly.
+
+Things to remember in interviews:
+- Discuss RAII: resources tied to object lifetime; no global singletons.
+- Thread-safety: producer/consumer queue, atomic state, clear ownership.
+- Error handling: fail-fast on misconfig; log levels, structured messages.
+- Build system hygiene: target-level includes, SYSTEM headers to lower precedence.
+- Testing strategy: unit tests for core; integration tests for HTTP endpoints.
+
+Suggested tests to mention:
+- Unit: `GatewayCore` state transitions (Idle → Measuring → Stop), latest sample serialization.
+- Integration: spin `gateway_app` on ephemeral port; verify `/status`, `/start`, `/stop` with an HTTP client.
+- Negative cases: invalid route (404), concurrent start/stop calls, status while Measuring.
+
+Performance/robustness tips:
+- Keep handlers lightweight; offload work to core.
+- Timeouts and backoff for cloud client (future extension).
+- Structured logging and metrics for observability.
+
+Common pitfalls:
+- Environment leaking headers/libs (e.g., MSYS headers with MSVC).
+- Vendoring libraries unnecessarily; prefer FetchContent or package managers.
+- Mixing responsibilities in handlers; keep transport thin.
+
+Sound bites:
+- “Transport is thin; domain logic stays in `GatewayCore`.”
+- “Header-only via FetchContent keeps CI fast and reproducible.”
+- “We validated endpoints with PowerShell `Invoke-WebRequest` and kept builds clean with VS toolchain.”
