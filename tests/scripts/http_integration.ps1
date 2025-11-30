@@ -8,14 +8,23 @@
 $ErrorActionPreference = 'Stop'
 
 # Resolve app path from build tree
-$repoRoot = "$PSScriptRoot" | Split-Path -Parent | Split-Path -Parent
-if (-not (Test-Path "$repoRoot/gateway/Debug/gateway_app.exe")) {
-  # Try common layouts
-  $repoRoot = "$PWD"
+$binRoot = "$PSScriptRoot" | Split-Path -Parent
+# Prefer configured working dir if invoked directly under build root
+if (-not (Test-Path "$binRoot/gateway/Debug/gateway_app.exe") -and -not (Test-Path "$binRoot/gateway/Release/gateway_app.exe")) {
+  $binRoot = "$PWD"
 }
-$appPath = Join-Path $repoRoot "gateway/Debug/gateway_app.exe"
-if (-not (Test-Path $appPath)) {
-  Write-Error "gateway_app.exe not found at $appPath"
+
+# Try Release first, then Debug
+$candidatePaths = @(
+  (Join-Path $binRoot "gateway/Release/gateway_app.exe"),
+  (Join-Path $binRoot "gateway/Debug/gateway_app.exe")
+)
+$appPath = $null
+foreach ($p in $candidatePaths) {
+  if (Test-Path $p) { $appPath = $p; break }
+}
+if (-not $appPath) {
+  Write-Error "gateway_app.exe not found in Release or Debug under $binRoot"
 }
 
 # Start app

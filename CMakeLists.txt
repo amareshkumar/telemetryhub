@@ -101,12 +101,16 @@ if(NOT TARGET httplib)
   # Use normal include (not SYSTEM) to prevent /external:I injection
   target_include_directories(httplib INTERFACE ${httplib_SOURCE_DIR})
 endif()
-
-add_subdirectory(device)
-add_subdirectory(tools)
-add_subdirectory(gateway)
-
-target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
+target_link_libraries(gateway_app PRIVATE httplib)
+## Hard-disable optional cpp-httplib features that may inject unwanted libs/defs
+target_compile_definitions(gateway_app PRIVATE 
+  CPPHTTPLIB_ZSTD_SUPPORT=0 
+  CPPHTTPLIB_USE_NON_BLOCKING_GETADDRINFO=0
+  CPPHTTPLIB_NO_ZSTD=1
+  CPPHTTPLIB_NO_BROTLI=1
+  CPPHTTPLIB_NO_ZLIB=1
+  CPPHTTPLIB_NO_OPENSSL=1
+)
 
 if (BUILD_GUI)
     # add_subdirectory(gui)

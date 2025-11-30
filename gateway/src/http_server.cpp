@@ -1,3 +1,4 @@
+#include "http_config.h"
 #include <httplib.h>
 
 #include "telemetryhub/gateway/GatewayCore.h"
