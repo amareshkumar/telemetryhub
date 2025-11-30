@@ -76,6 +76,15 @@ Build and run:
    Configure with -DUSE_HTTPLIB_STUB=OFF and -T host=x64.
    Build gateway_app.
    Use Invoke-WebRequest to call /status, /start, /stop.
+
+## Troubleshooting (Windows/MSVC)
+
+If you see MSYS header errors (e.g., `C:/msys64/ucrt64/include/...` and `__asm__ unknown override specifier`) or linker issues like `LNK1136`, check `docs/windows_build_troubleshooting.md` for:
+
+- Sanitizing environment variables that contain `msys64`
+- Disabling MSVC external headers and CMake finder system paths
+- Verifying library architecture via `dumpbin`/`link.exe`
+- Clean rebuild steps and quick verification commands
 ```powershell
 Test the REST API in another PowerShell window:
 
@@ -84,3 +93,40 @@ Test the REST API in another PowerShell window:
 Notes
 - Prefer Developer PowerShell to avoid MSYS paths leaking into MSVC builds.
 - PowerShell's `curl` may be an alias; use `Invoke-WebRequest` for consistency on Windows.
+
+## Verifying Real HTTP Integration
+
+Steps to confirm the gateway uses the real `cpp-httplib` and integration tests pass:
+
+1. Configure with stub disabled:
+   ```powershell
+   cmake -G "Visual Studio 18 2026" -A x64 -T host=x64 .. -DUSE_HTTPLIB_STUB=OFF -DCMAKE_BUILD_TYPE=Debug
+   ```
+2. Ensure FetchContent pulled httplib (look for `httplib` messages or `_deps/httplib-src/httplib.h` in the build directory).
+3. Verify no stub macro remains: `gateway/src/http_server.cpp` should only have `#include <httplib.h>`.
+4. Build target:
+   ```powershell
+   cmake --build . --config Debug --target gateway_app
+   ```
+5. Manual run:
+   ```powershell
+   .\gateway\Debug\gateway_app.exe
+   ```
+   Expect log: `Listening on port 8080`.
+6. Manual endpoint check (separate shell):
+   ```powershell
+   Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+   Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
+   Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop  | Select-Object -ExpandProperty Content
+   ```
+7. Integration test (Windows):
+   ```powershell
+   ctest -C Debug -R http_integration --output-on-failure
+   ```
+   Pass criteria: script prints `HTTP integration test passed`.
+8. Confirm build artifacts link against `httplib` target (check `gateway_app.vcxproj` IncludePath contains `_deps/httplib-src`).
+
+If failures occur:
+- Check PATH for stray `C:\msys64` entries; re-open Developer PowerShell if present.
+- Re-run configure after deleting `CMakeCache.txt` if the `httplib` target is missing.
+- Search for any lingering `USE_HTTPLIB_STUB` text (`git grep USE_HTTPLIB_STUB`) — should return nothing.
