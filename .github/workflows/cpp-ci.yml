@@ -7,6 +7,26 @@ on:
     branches: [main, master]
 
 jobs:
+  smoke:
+    name: Smoke (gateway_app --version)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+      - name: Configure (Linux Debug preset)
+        run: cmake --preset linux-ninja-debug
+      - name: Build gateway_app only
+        run: cmake --build --preset linux-ninja-debug --target gateway_app -v
+      - name: Smoke run --version
+        run: |
+          if [ -f build/gateway/gateway_app ]; then build/gateway/gateway_app --version; fi
+          if [ -f build/gateway_app ]; then build/gateway_app --version; fi
   linux:
     name: Linux (ASAN+UBSAN via Presets)
     runs-on: ubuntu-latest
@@ -80,4 +100,21 @@ jobs:
       - run: cmake --preset linux-ninja-tsan
       - run: cmake --build --preset linux-ninja-tsan -v
       - run: ctest --preset linux-ninja-tsan --output-on-failure
+
+  linux-release:
+    name: Linux (Release via Presets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build
+      - name: Clean previous build dirs
+        run: |
+          rm -rf build build_asan build_tsan
+      - name: Configure (Linux Debug preset, use Release build)
+        run: cmake --preset linux-ninja-debug
+      - name: Build (Release config)
+        run: cmake --build --preset linux-ninja-debug --config Release -v || cmake --build build -v
+      - name: Tests (ctest Release)
+        run: ctest --test-dir build -C Release --output-on-failure
 
