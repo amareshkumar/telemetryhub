@@ -78,7 +78,6 @@ target_link_libraries(cloud_client_tests
 
 # Integration: run gateway_app and validate REST endpoints (Windows only)
 if(WIN32)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/http_integration.ps1
                  ${CMAKE_CURRENT_BINARY_DIR}/http_integration.ps1 COPYONLY)
   add_test(NAME http_integration

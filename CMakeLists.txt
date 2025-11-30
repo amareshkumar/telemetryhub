@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(TelemetryHub 
-    VERSION 0.8.0
+    VERSION 0.9.0
     LANGUAGES CXX
 )
 
@@ -76,20 +76,14 @@ set(CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS OFF)
 # option(BUILD_GUI "Build Qt GUI" ON)
 option(BUILD_TESTING "Build tests" ON)
 
-add_subdirectory(device)
-add_subdirectory(tools)
-add_subdirectory(gateway)
-
-target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
-
-# cpp-httplib integration via FetchContent
+# cpp-httplib integration via FetchContent (must be before add_subdirectory(gateway))
 include(FetchContent)
 
 # Force-disable optional backends that could pull MSYS libraries on Windows to fix the issue with CI builds
-set(HTTPLIB_IS_USING_ZSTD OFF CACHE BOOL "Disable Zstd to avoid non-MSVC libs" FORCE)
-set(HTTPLIB_USE_OPENSSL OFF CACHE BOOL "Disable OpenSSL auto-linking" FORCE)
-set(HTTPLIB_USE_ZLIB OFF CACHE BOOL "Disable zlib auto-linking" FORCE)
-set(HTTPLIB_USE_BROTLI OFF CACHE BOOL "Disable brotli auto-linking" FORCE)
+set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE OFF CACHE BOOL "Disable OpenSSL auto-linking" FORCE)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF CACHE BOOL "Disable zlib auto-linking" FORCE)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF CACHE BOOL "Disable brotli auto-linking" FORCE)
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF CACHE BOOL "Disable Zstd to avoid non-MSVC libs" FORCE)
 
 FetchContent_Declare(
   httplib
@@ -107,12 +101,12 @@ if(NOT TARGET httplib)
   # Use normal include (not SYSTEM) to prevent /external:I injection
   target_include_directories(httplib INTERFACE ${httplib_SOURCE_DIR})
 endif()
-target_link_libraries(gateway_app PRIVATE httplib)
-## Hard-disable optional cpp-httplib features that may inject unwanted libs/defs
-target_compile_definitions(gateway_app PRIVATE 
-  CPPHTTPLIB_ZSTD_SUPPORT=0 
-  CPPHTTPLIB_USE_NON_BLOCKING_GETADDRINFO=0
-)
+
+add_subdirectory(device)
+add_subdirectory(tools)
+add_subdirectory(gateway)
+
+target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
 
 if (BUILD_GUI)
     # add_subdirectory(gui)

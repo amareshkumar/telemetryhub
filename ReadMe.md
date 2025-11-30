@@ -64,18 +64,25 @@ telemetryhub/
    ├─ perf_tool.cpp
    ├─ run_ci.sh
    └─ run_ci.bat
+```
 
-// cpp-httplib integration
+## cpp-httplib integration
 
-## Windows (Developer PowerShell) quick start
+### Windows (Developer PowerShell) quick start
 
 - Prereqs: Visual Studio with C++ toolchain, use Developer PowerShell.
 - `cpp-httplib` is fetched via CMake FetchContent; no vendor folder needed.
 
 Build and run:
-   Configure with -DUSE_HTTPLIB_STUB=OFF and -T host=x64.
-   Build gateway_app.
-   Use Invoke-WebRequest to call /status, /start, /stop.
+- Configure with `-DUSE_HTTPLIB_STUB=OFF` and `-T host=x64`.
+- Build `gateway_app`.
+- Use `Invoke-WebRequest` to call `/status`, `/start`, `/stop`.
+
+Test the REST API in another PowerShell window.
+
+### Notes
+- Prefer Developer PowerShell to avoid MSYS paths leaking into MSVC builds.
+- PowerShell's `curl` may be an alias; use `Invoke-WebRequest` for consistency on Windows.
 
 ## Troubleshooting (Windows/MSVC)
 
@@ -85,14 +92,6 @@ If you see MSYS header errors (e.g., `C:/msys64/ucrt64/include/...` and `__asm__
 - Disabling MSVC external headers and CMake finder system paths
 - Verifying library architecture via `dumpbin`/`link.exe`
 - Clean rebuild steps and quick verification commands
-```powershell
-Test the REST API in another PowerShell window:
-
-```powershell
-
-Notes
-- Prefer Developer PowerShell to avoid MSYS paths leaking into MSVC builds.
-- PowerShell's `curl` may be an alias; use `Invoke-WebRequest` for consistency on Windows.
 
 ## Verifying Real HTTP Integration
 
