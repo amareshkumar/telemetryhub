@@ -1,0 +1,58 @@
+name: Windows C++ CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, day9_original_plan ]
+
+jobs:
+  build-and-test-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print runner info
+        run: |
+          Get-ChildItem Env: | Sort-Object Name | Format-Table -AutoSize | Out-String
+
+      - name: Sanitize MSYS/GNU env paths
+        run: |
+          $vars = @('INCLUDE','LIB','LIBPATH','CPATH','PKG_CONFIG_PATH','CPLUS_INCLUDE_PATH','C_INCLUDE_PATH')
+          foreach ($v in $vars) {
+            $val = [Environment]::GetEnvironmentVariable($v)
+            if ($val -and $val -match 'msys64') {
+              Write-Host "Clearing $v due to msys64 contamination"
+              [Environment]::SetEnvironmentVariable($v, $null)
+              if (Test-Path "Env:$v") { Remove-Item "Env:$v" -ErrorAction SilentlyContinue }
+            }
+          }
+
+      - name: Clean previous build dir
+        run: |
+          if (Test-Path build_vs_ci) { Remove-Item -Recurse -Force build_vs_ci }
+
+      - name: Configure (Preset VS2022)
+        run: |
+          cmake --preset vs2022-release-ci
+
+      - name: Build (Preset)
+        run: |
+          cmake --build --preset vs2022-release-ci -- /m
+
+      - name: Run tests (CTest Preset)
+        run: |
+          ctest --preset vs2022-release-ci --output-on-failure
+
+      - name: Archive logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ci-logs
+          path: |
+            build_vs_ci/**/CMakeFiles/CMakeOutput.log
+            build_vs_ci/**/CMakeFiles/CMakeError.log
+            build_vs_ci/**/Testing/**

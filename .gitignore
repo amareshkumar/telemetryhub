@@ -1,0 +1,36 @@
+# Build directories
+build/
+out/
+cmake-build-*/
+_codeql_build_dir/
+_codeql_detected_source_root
+
+# IDE files
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Generated files
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Logs
+*.log
+Testing/
+build_asan/
+build_ninja/
+build_vs/
+build_vs26/
+build_vs_ci/
+build_vs_clean/
+build_vs_real/
+external/
+output.txt
+.gitignore

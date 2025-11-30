@@ -25,6 +25,9 @@ static telemetryhub::LogLevel parse_level(std::string_view s){
   return telemetryhub::LogLevel::Trace;
 }
 
+// Forward declare HTTP server runner
+namespace telemetryhub { namespace gateway { int run_http_server(unsigned short port); }}
+
 int main(int argc, char* argv[])
 {
     using namespace std::chrono_literals;
@@ -49,7 +52,7 @@ int main(int argc, char* argv[])
     // after setting level and opening file:
 TELEMETRYHUB_LOGI("main", "logger online (console)");
 TELEMETRYHUB_LOGD("main", "debug visible only at --log-level debug+");
-TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at --log-level trace");
+TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at --log-level trace or below");
     telemetryhub::print_version();
 
     std::signal(SIGINT, on_sigint); // Ctrl-C (Windows console gets SIGINT too)
@@ -66,47 +69,17 @@ TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at
         }
     }
 
-    GatewayCore core;
-    
     std::cout << "TelemetryHub " << telemetryhub::version() << "\n";
+    TELEMETRYHUB_LOGI("main","Starting HTTP server on port 8080");
+    // Start server (non-blocking in stub; blocking with real cpp-httplib)
+    telemetryhub::gateway::run_http_server(8080);
 
-    std::cout << "Starting TelemetryHub gateway_app...\n";
-    core.start();
-
-    std::cout << "Monitoring device for a while...\n";
-
-    for (int i = 0; i < 50; ++i)
-    {
-        auto state = core.device_state();
-        auto latest = core.latest_sample();
-
-        std::cout << "[tick " << i << "] state=" << to_string(state);
-
-        if (latest)
-        {
-            const TelemetrySample& s = *latest;
-            std::cout << " | latest sample #" << s.sequence_id
-                      << " value=" << s.value
-                      << " " << s.unit;
-        }
-        else
-        {
-            std::cout << " | no sample yet";
-        }
-
-        std::cout << "\n";
-
-        if (state == DeviceState::SafeState)
-        {
-            std::cout << "Device reached SafeState, breaking monitoring loop.\n";
-            break;
-        }
-
+    // Wait for Ctrl-C
+    while (!g_stop.load()) {
         std::this_thread::sleep_for(200ms);
     }
-
-    std::cout << "Stopping core...\n";
-    core.stop();
+    TELEMETRYHUB_LOGI("main","Shutdown requested; stopping gateway.");
+    // Graceful shutdown is handled via HTTP /stop endpoint or when run_http_server exits.
     std::cout << "gateway_app exiting.\n";
 
     return 0;
