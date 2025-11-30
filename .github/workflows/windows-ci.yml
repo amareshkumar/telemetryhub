@@ -23,9 +23,11 @@ jobs:
         run: |
           $vars = @('INCLUDE','LIB','LIBPATH','CPATH','PKG_CONFIG_PATH','CPLUS_INCLUDE_PATH','C_INCLUDE_PATH')
           foreach ($v in $vars) {
-            if ($env:$v -and $env:$v -match 'msys64') {
+            $val = [Environment]::GetEnvironmentVariable($v)
+            if ($val -and $val -match 'msys64') {
               Write-Host "Clearing $v due to msys64 contamination"
-              Remove-Item Env:\$v
+              [Environment]::SetEnvironmentVariable($v, $null)
+              if (Test-Path "Env:$v") { Remove-Item "Env:$v" -ErrorAction SilentlyContinue }
             }
           }
 
