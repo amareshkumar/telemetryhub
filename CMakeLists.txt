@@ -76,31 +76,28 @@ set(CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS OFF)
 # option(BUILD_GUI "Build Qt GUI" ON)
 option(BUILD_TESTING "Build tests" ON)
 
-# cpp-httplib integration via FetchContent (must be before add_subdirectory(gateway))
+add_subdirectory(device)
+add_subdirectory(tools)
+add_subdirectory(gateway)
+
+target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
+
+# cpp-httplib integration via FetchContent, but avoid its CMake logic
 include(FetchContent)
 
-# Force-disable optional backends that could pull MSYS libraries on Windows to fix the issue with CI builds
-set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE OFF CACHE BOOL "Disable OpenSSL auto-linking" FORCE)
-set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF CACHE BOOL "Disable zlib auto-linking" FORCE)
-set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF CACHE BOOL "Disable brotli auto-linking" FORCE)
-set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF CACHE BOOL "Disable Zstd to avoid non-MSVC libs" FORCE)
-
 FetchContent_Declare(
-  httplib
+  httplib_src
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
   GIT_TAG v0.28.0
 )
-FetchContent_GetProperties(httplib)
-# Include the fetched httplib.h in gateway_app
-if(NOT httplib_POPULATED)
-  FetchContent_MakeAvailable(httplib)
+FetchContent_GetProperties(httplib_src)
+if(NOT httplib_src_POPULATED)
+  FetchContent_Populate(httplib_src)
 endif()
-# Use existing httplib target if provided by FetchContent; otherwise define one
-if(NOT TARGET httplib)
-  add_library(httplib INTERFACE)
-  # Use normal include (not SYSTEM) to prevent /external:I injection
-  target_include_directories(httplib INTERFACE ${httplib_SOURCE_DIR})
-endif()
+
+# Define a simple INTERFACE target that points to the header path
+add_library(httplib INTERFACE)
+target_include_directories(httplib INTERFACE ${httplib_src_SOURCE_DIR})
 target_link_libraries(gateway_app PRIVATE httplib)
 ## Hard-disable optional cpp-httplib features that may inject unwanted libs/defs
 target_compile_definitions(gateway_app PRIVATE 
