@@ -25,10 +25,7 @@ target_include_directories(gateway_app
     PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
-## Use real cpp-httplib provided by FetchContent at the root. The `httplib`
-## interface target must already exist (declared in the top-level CMakeLists).
-if(TARGET httplib)
-    target_link_libraries(gateway_app PRIVATE httplib)
-endif()
+## Linkages to third-party libraries (e.g., httplib) are applied in the root
+## CMakeLists to keep ordering predictable across subdirectories.
 
 

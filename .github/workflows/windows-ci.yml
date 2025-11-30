@@ -29,18 +29,21 @@ jobs:
             }
           }
 
-      - name: Configure (CMake, VS 2022 Generator, x64)
+      - name: Clean previous build dir
         run: |
-          # GitHub windows-latest runner provides Visual Studio 2022
-          cmake -S . -B build_vs_ci -G "Visual Studio 17 2022" -A x64
+          if (Test-Path build_vs_ci) { Remove-Item -Recurse -Force build_vs_ci }
 
-      - name: Build Release gateway_app
+      - name: Configure (Preset VS2022)
         run: |
-          cmake --build build_vs_ci --target gateway_app --config Release -- /m
+          cmake --preset vs2022-release-ci
 
-      - name: Run tests (ctest)
+      - name: Build (Preset)
         run: |
-          ctest -C Release --test-dir build_vs_ci -R http_integration --output-on-failure
+          cmake --build --preset vs2022-release-ci -- /m
+
+      - name: Run tests (CTest Preset)
+        run: |
+          ctest --preset vs2022-release-ci --output-on-failure
 
       - name: Archive logs on failure
         if: failure()
