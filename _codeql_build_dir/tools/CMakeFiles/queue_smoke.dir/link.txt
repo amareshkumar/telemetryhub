@@ -1,0 +1,1 @@
+/home/runner/work/telemetryhub/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/queue_smoke.dir/link.d CMakeFiles/queue_smoke.dir/queue_smoke.cpp.o -o queue_smoke  ../gateway/libgateway_core.a ../device/libdevice.a

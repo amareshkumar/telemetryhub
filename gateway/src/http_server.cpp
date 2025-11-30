@@ -17,6 +17,9 @@ static std::shared_ptr<GatewayCore> g_gateway;
 static std::once_flag g_init_flag;
 
 static std::string json_status() {
+  if (!g_gateway) {
+    return "{\"error\":\"Gateway not initialized\"}";
+  }
   std::ostringstream os;
   auto state = g_gateway->device_state();
   auto latest = g_gateway->latest_sample();

@@ -1,0 +1,1 @@
+/home/runner/work/telemetryhub/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/raii_demo.dir/link.d CMakeFiles/raii_demo.dir/raii_demo.cpp.o -o raii_demo  ../device/libdevice.a

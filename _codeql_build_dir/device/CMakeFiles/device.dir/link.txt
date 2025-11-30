@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdevice.a CMakeFiles/device.dir/src/FileHandle.cpp.o CMakeFiles/device.dir/src/Device.cpp.o
+/usr/bin/ranlib libdevice.a
