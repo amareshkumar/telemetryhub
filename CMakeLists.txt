@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(TelemetryHub 
-    VERSION 0.1.3
+    VERSION 0.8.0
     LANGUAGES CXX
 )
 
@@ -40,6 +40,8 @@ else()
   set(THUB_VERSION_INCLUDE_DIR "${CMAKE_BINARY_DIR}/generated")
 endif()
 
+
+
 # Make the chosen include dir available to everyone who needs Version.h
 include_directories("${THUB_VERSION_INCLUDE_DIR}")
 
@@ -58,6 +60,26 @@ add_subdirectory(tools)
 add_subdirectory(gateway)
 
 target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
+
+# cpp-httplib integration via FetchContent
+include(FetchContent)
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG v0.28.0
+)
+FetchContent_GetProperties(httplib)
+# Include the fetched httplib.h in gateway_app
+if(NOT httplib_POPULATED)
+  FetchContent_MakeAvailable(httplib)
+endif()
+# Use existing httplib target if provided by FetchContent; otherwise define one
+if(NOT TARGET httplib)
+  add_library(httplib INTERFACE)
+  # Mark as SYSTEM to avoid interfering with MSVC standard headers include order
+  target_include_directories(httplib SYSTEM INTERFACE ${httplib_SOURCE_DIR})
+endif()
+target_link_libraries(gateway_app PRIVATE httplib)
 
 if (BUILD_GUI)
     # add_subdirectory(gui)
