@@ -75,3 +75,13 @@ target_link_libraries(cloud_client_tests
   GTest::gtest
   GTest::gtest_main
 )
+
+# Integration: run gateway_app and validate REST endpoints (Windows only)
+if(WIN32)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/http_integration.ps1
+                 ${CMAKE_CURRENT_BINARY_DIR}/http_integration.ps1 COPYONLY)
+  add_test(NAME http_integration
+           COMMAND pwsh -NoLogo -NoProfile -File ${CMAKE_CURRENT_BINARY_DIR}/http_integration.ps1
+           WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  set_tests_properties(http_integration PROPERTIES TIMEOUT 20)
+endif()
