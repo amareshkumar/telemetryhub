@@ -23,3 +23,14 @@ _codeql_detected_source_root
 
 # Logs
 *.log
+Testing/
+build_asan/
+build_ninja/
+build_vs/
+build_vs26/
+build_vs_ci/
+build_vs_clean/
+build_vs_real/
+external/
+output.txt
+.gitignore
