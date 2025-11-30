@@ -2,6 +2,8 @@
 #include "telemetryhub/device/DeviceUtils.h"
 #include "telemetryhub/Version.h"
 #include "telemetryhub/gateway/Log.h"
+#include "telemetryhub/gateway/GatewayCore.h"
+#include <functional>
 
 #include <chrono>
 #include <iostream>
@@ -24,6 +26,9 @@ static telemetryhub::LogLevel parse_level(std::string_view s){
   if (s=="debug") return telemetryhub::LogLevel::Debug;
   return telemetryhub::LogLevel::Trace;
 }
+
+// Forward declare HTTP server runner
+namespace telemetryhub { namespace gateway { int run_http_server(unsigned short port); }}
 
 int main(int argc, char* argv[])
 {
@@ -66,47 +71,17 @@ TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at
         }
     }
 
-    GatewayCore core;
-    
     std::cout << "TelemetryHub " << telemetryhub::version() << "\n";
+    TELEMETRYHUB_LOGI("main","Starting HTTP server on port 8080");
+    // Start server (non-blocking in stub; blocking with real cpp-httplib)
+    telemetryhub::gateway::run_http_server(8080);
 
-    std::cout << "Starting TelemetryHub gateway_app...\n";
-    core.start();
-
-    std::cout << "Monitoring device for a while...\n";
-
-    for (int i = 0; i < 50; ++i)
-    {
-        auto state = core.device_state();
-        auto latest = core.latest_sample();
-
-        std::cout << "[tick " << i << "] state=" << to_string(state);
-
-        if (latest)
-        {
-            const TelemetrySample& s = *latest;
-            std::cout << " | latest sample #" << s.sequence_id
-                      << " value=" << s.value
-                      << " " << s.unit;
-        }
-        else
-        {
-            std::cout << " | no sample yet";
-        }
-
-        std::cout << "\n";
-
-        if (state == DeviceState::SafeState)
-        {
-            std::cout << "Device reached SafeState, breaking monitoring loop.\n";
-            break;
-        }
-
+    // Wait for Ctrl-C
+    while (!g_stop.load()) {
         std::this_thread::sleep_for(200ms);
     }
-
-    std::cout << "Stopping core...\n";
-    core.stop();
+    TELEMETRYHUB_LOGI("main","Shutdown requested; stopping gateway.");
+    // Ensure graceful shutdown via HTTP /stop or direct stop when main exits handled in run_http_server
     std::cout << "gateway_app exiting.\n";
 
     return 0;

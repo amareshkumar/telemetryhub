@@ -64,3 +64,23 @@ telemetryhub/
    ├─ perf_tool.cpp
    ├─ run_ci.sh
    └─ run_ci.bat
+
+// cpp-httplib integration
+
+## Windows (Developer PowerShell) quick start
+
+- Prereqs: Visual Studio with C++ toolchain, use Developer PowerShell.
+- `cpp-httplib` is fetched via CMake FetchContent; no vendor folder needed.
+
+Build and run:
+   Configure with -DUSE_HTTPLIB_STUB=OFF and -T host=x64.
+   Build gateway_app.
+   Use Invoke-WebRequest to call /status, /start, /stop.
+```powershell
+Test the REST API in another PowerShell window:
+
+```powershell
+
+Notes
+- Prefer Developer PowerShell to avoid MSYS paths leaking into MSVC builds.
+- PowerShell's `curl` may be an alias; use `Invoke-WebRequest` for consistency on Windows.
