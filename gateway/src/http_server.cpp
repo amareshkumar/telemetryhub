@@ -1,11 +1,4 @@
-#define CPPHTTPLIB_ZSTD_SUPPORT 0
-#define CPPHTTPLIB_BROTLI_SUPPORT 0
-#define CPPHTTPLIB_ZLIB_SUPPORT 0
-#define CPPHTTPLIB_OPENSSL_SUPPORT 0
-#define CPPHTTPLIB_NO_ZSTD 1
-#define CPPHTTPLIB_NO_BROTLI 1
-#define CPPHTTPLIB_NO_ZLIB 1
-#define CPPHTTPLIB_NO_OPENSSL 1
+#include "http_config.h"
 #include <httplib.h>
 
 #include "telemetryhub/gateway/GatewayCore.h"
