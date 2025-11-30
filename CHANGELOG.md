@@ -3,9 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
-## [Unreleased]
+## [Released]
 
 ## [0.9.0] - 2025-11-30
+**Title:** Real HTTP Gateway, Stable Cross-Platform Builds
+
+**Description:** This release replaces the stubbed HTTP server with real `cpp-httplib` endpoints in `gateway_app` and hardens the build across Windows and Linux. It adds CMake Presets, Windows Developer PowerShell guidance, and CI workflow updates to keep checks green. Tests are stabilized with a fast log sink check and a Windows PowerShell HTTP integration test.
 - Added: Local REST API in gateway_app using real cpp-httplib (/status, /start, /stop).
 - Fixed: Windows/MSVC build contamination from MSYS headers; standardized Developer PowerShell and x64 host.
 - Added: Windows quick start in ReadMe.md with PowerShell examples.
