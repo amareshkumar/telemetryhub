@@ -2,8 +2,6 @@
 #include "telemetryhub/device/DeviceUtils.h"
 #include "telemetryhub/Version.h"
 #include "telemetryhub/gateway/Log.h"
-#include "telemetryhub/gateway/GatewayCore.h"
-#include <functional>
 
 #include <chrono>
 #include <iostream>
@@ -54,7 +52,7 @@ int main(int argc, char* argv[])
     // after setting level and opening file:
 TELEMETRYHUB_LOGI("main", "logger online (console)");
 TELEMETRYHUB_LOGD("main", "debug visible only at --log-level debug+");
-TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at --log-level trace");
+TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at --log-level trace or below");
     telemetryhub::print_version();
 
     std::signal(SIGINT, on_sigint); // Ctrl-C (Windows console gets SIGINT too)
@@ -81,7 +79,7 @@ TELEMETRYHUB_LOG(::telemetryhub::LogLevel::Trace, "main", "trace visible only at
         std::this_thread::sleep_for(200ms);
     }
     TELEMETRYHUB_LOGI("main","Shutdown requested; stopping gateway.");
-    // Ensure graceful shutdown via HTTP /stop or direct stop when main exits handled in run_http_server
+    // Graceful shutdown is handled via HTTP /stop endpoint or when run_http_server exits.
     std::cout << "gateway_app exiting.\n";
 
     return 0;

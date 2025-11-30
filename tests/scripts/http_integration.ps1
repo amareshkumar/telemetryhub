@@ -31,6 +31,7 @@ if (-not $appPath) {
 $proc = Start-Process -FilePath $appPath -PassThru -WindowStyle Hidden
 
 # Wait for port up
+$tn = $false
 $deadline = [DateTime]::UtcNow.AddSeconds(5)
 while ([DateTime]::UtcNow -lt $deadline) {
   $tn = Test-NetConnection -ComputerName localhost -Port 8080 -InformationLevel Quiet
@@ -42,20 +43,24 @@ if (-not $tn) {
   Write-Error "Server did not start on port 8080"
 }
 
-# Status
-$status = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
-if (-not $status) { throw "Empty status response" }
+try {
+  # Status
+  $status = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+  if (-not $status) { throw "Empty status response" }
 
-# Start
-$startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
-if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
+  # Start
+  $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
+  if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
 
-# Stop
-$stopResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop | Select-Object -ExpandProperty Content
-if ($stopResp -notmatch '"ok":true') { throw "Stop failed: $stopResp" }
+  # Stop
+  $stopResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop | Select-Object -ExpandProperty Content
+  if ($stopResp -notmatch '"ok":true') { throw "Stop failed: $stopResp" }
 
-# Clean up
-try { Stop-Process -Id $proc.Id -Force } catch {}
-
-Write-Host "HTTP integration test passed"
-exit 0
+  Write-Host "HTTP integration test passed"
+  exit 0
+} catch {
+  Write-Error "HTTP integration test failed: $_"
+  exit 1
+} finally {
+  try { Stop-Process -Id $proc.Id -Force } catch {}
+}
