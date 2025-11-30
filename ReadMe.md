@@ -74,7 +74,7 @@ telemetryhub/
 - `cpp-httplib` is fetched via CMake FetchContent; no vendor folder needed.
 
 Build and run:
-- Configure with `-DUSE_HTTPLIB_STUB=OFF` and `-T host=x64`.
+- Use CMake presets (recommended) or configure a VS generator with `-T host=x64`.
 - Build `gateway_app`.
 - Use `Invoke-WebRequest` to call `/status`, `/start`, `/stop`.
 
@@ -95,14 +95,16 @@ If you see MSYS header errors (e.g., `C:/msys64/ucrt64/include/...` and `__asm__
 
 ## Verifying Real HTTP Integration
 
+For a concise walkthrough on Windows and Linux, see `docs/verify_rest.md`.
+
 Steps to confirm the gateway uses the real `cpp-httplib` and integration tests pass:
 
-1. Configure with stub disabled:
+1. Configure a build directory:
    ```powershell
-   cmake -G "Visual Studio 18 2026" -A x64 -T host=x64 .. -DUSE_HTTPLIB_STUB=OFF -DCMAKE_BUILD_TYPE=Debug
+   cmake -G "Visual Studio 18 2026" -A x64 -T host=x64 .. -DCMAKE_BUILD_TYPE=Debug
    ```
 2. Ensure FetchContent pulled httplib (look for `httplib` messages or `_deps/httplib-src/httplib.h` in the build directory).
-3. Verify no stub macro remains: `gateway/src/http_server.cpp` should only have `#include <httplib.h>`.
+3. Verify http_server uses the real header only: `gateway/src/http_server.cpp` should include `#include <httplib.h>`.
 4. Build target:
    ```powershell
    cmake --build . --config Debug --target gateway_app
@@ -127,5 +129,4 @@ Steps to confirm the gateway uses the real `cpp-httplib` and integration tests p
 
 If failures occur:
 - Check PATH for stray `C:\msys64` entries; re-open Developer PowerShell if present.
-- Re-run configure after deleting `CMakeCache.txt` if the `httplib` target is missing.
-- Search for any lingering `USE_HTTPLIB_STUB` text (`git grep USE_HTTPLIB_STUB`) — should return nothing.
+ - Re-run configure after deleting `CMakeCache.txt` if the `httplib` target is missing.
