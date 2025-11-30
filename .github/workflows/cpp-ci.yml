@@ -8,7 +8,7 @@ on:
 
 jobs:
   linux:
-    name: Linux (clang/gcc, ASAN+UBSAN)
+    name: Linux (ASAN+UBSAN via Presets)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (full history for git describe)
@@ -21,21 +21,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DENABLE_ASAN=ON -DENABLE_UBSAN=ON
+      - name: Configure (Preset)
+        run: cmake --preset linux-ninja-asan-ubsan
 
-      - name: Build
-        run: cmake --build build --config Debug -v
+      - name: Build (Preset)
+        run: cmake --build --preset linux-ninja-asan-ubsan -v
 
-      - name: Tests (CTest)
-        run: ctest --test-dir build --output-on-failure
+      - name: Tests (CTest Preset)
+        run: ctest --preset linux-ninja-asan-ubsan --output-on-failure
 
       - name: "Smoke: gateway_app --version"
         run: |
           if [ -f build/gateway/gateway_app ]; then build/gateway/gateway_app --version; fi
           if [ -f build/gateway_app ]; then build/gateway_app --version; fi
   windows:
-    name: Windows (MSVC)
+    name: Windows (MSVC via Presets)
     runs-on: windows-latest
     steps:
       - name: Checkout (full history for git describe)
@@ -46,17 +46,17 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      - name: Configure (MSVC)
+      - name: Configure (Preset)
         shell: bash
-        run: cmake -S . -B build -G Ninja -DBUILD_TESTING=ON
+        run: cmake --preset vs2022-release-ci
 
-      - name: Build
+      - name: Build (Preset)
         shell: bash
-        run: cmake --build build --config Debug -v
+        run: cmake --build --preset vs2022-release-ci -v
 
-      - name: Tests (CTest)
+      - name: Tests (CTest Preset)
         shell: bash
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --preset vs2022-release-ci --output-on-failure
 
       - name: "Smoke: gateway_app --version"
         shell: bash
@@ -64,13 +64,13 @@ jobs:
           if [ -f build/gateway/gateway_app.exe ]; then build/gateway/gateway_app.exe --version; fi
           if [ -f build/gateway_app.exe ]; then build/gateway_app.exe --version; fi
   linux-tsan:
-    name: Linux (TSan)
+    name: Linux (TSan via Presets)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build
-      - run: cmake -S . -B build-tsan -G Ninja -DBUILD_TESTING=ON -DENABLE_TSAN=ON -DENABLE_ASAN=OFF -DENABLE_UBSAN=OFF
-      - run: cmake --build build-tsan --config Debug -v
-      - run: ctest --test-dir build-tsan --output-on-failure
+      - run: cmake --preset linux-ninja-tsan
+      - run: cmake --build --preset linux-ninja-tsan -v
+      - run: ctest --preset linux-ninja-tsan --output-on-failure
 
