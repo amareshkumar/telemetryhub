@@ -1,1 +1,0 @@
-/home/runner/work/telemetryhub/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/cloud_client_tests.dir/link.d CMakeFiles/cloud_client_tests.dir/cloud_client_tests.cpp.o -o cloud_client_tests  ../device/libdevice.a ../gateway/libgateway_core.a ../lib/libgtest.a ../lib/libgtest_main.a ../device/libdevice.a ../lib/libgtest.a

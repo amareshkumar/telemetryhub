@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgateway_core.a CMakeFiles/gateway_core.dir/src/GatewayCore.cpp.o CMakeFiles/gateway_core.dir/src/TelemetryQueue.cpp.o CMakeFiles/gateway_core.dir/src/RestCloudClient.cpp.o
-/usr/bin/ranlib libgateway_core.a

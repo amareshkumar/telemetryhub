@@ -1,1 +1,0 @@
-/home/runner/work/telemetryhub/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/gateway_app.dir/link.d CMakeFiles/gateway_app.dir/src/main_gateway.cpp.o CMakeFiles/gateway_app.dir/src/http_server.cpp.o -o gateway_app  libgateway_core.a ../device/libdevice.a
