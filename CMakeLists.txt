@@ -85,11 +85,12 @@ target_include_directories(gateway_app PRIVATE "${THUB_VERSION_INCLUDE_DIR}")
 # cpp-httplib integration via FetchContent
 include(FetchContent)
 
-# Force-disable optional backends that could pull MSYS libraries on Windows to fix the issue with CI builds
-set(HTTPLIB_IS_USING_ZSTD OFF CACHE BOOL "Disable Zstd to avoid non-MSVC libs" FORCE)
-set(HTTPLIB_USE_OPENSSL OFF CACHE BOOL "Disable OpenSSL auto-linking" FORCE)
-set(HTTPLIB_USE_ZLIB OFF CACHE BOOL "Disable zlib auto-linking" FORCE)
-set(HTTPLIB_USE_BROTLI OFF CACHE BOOL "Disable brotli auto-linking" FORCE)
+ # Hard-disable optional deps at CMake level so its targets do not link
+ # to zstd/brotli/zlib/openssl on any toolchain.
+ set(HTTPLIB_USE_ZLIB OFF CACHE BOOL "Disable zlib in httplib" FORCE)
+ set(HTTPLIB_USE_BROTLI OFF CACHE BOOL "Disable brotli in httplib" FORCE)
+ set(HTTPLIB_USE_ZSTD OFF CACHE BOOL "Disable zstd in httplib" FORCE)
+ set(HTTPLIB_USE_OPENSSL OFF CACHE BOOL "Disable openssl in httplib" FORCE)
 
 FetchContent_Declare(
   httplib
@@ -101,6 +102,7 @@ FetchContent_GetProperties(httplib)
 if(NOT httplib_POPULATED)
   FetchContent_MakeAvailable(httplib)
 endif()
+ 
 # Use existing httplib target if provided by FetchContent; otherwise define one
 if(NOT TARGET httplib)
   add_library(httplib INTERFACE)
