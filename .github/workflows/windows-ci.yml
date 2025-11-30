@@ -6,7 +6,7 @@ on:
     branches: [ main, day9_original_plan ]
 
 jobs:
-  build-and-test-windows:
+  build-and-test-windows-release:
     runs-on: windows-latest
     defaults:
       run:
@@ -39,11 +39,11 @@ jobs:
         run: |
           cmake --preset vs2022-release-ci
 
-      - name: Build (Preset)
+      - name: Build (Preset Release)
         run: |
           cmake --build --preset vs2022-release-ci -- /m
 
-      - name: Run tests (CTest Preset)
+      - name: Run tests (CTest Preset Release)
         run: |
           ctest --preset vs2022-release-ci --output-on-failure
 
@@ -51,8 +51,43 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: windows-ci-logs
+          name: windows-ci-logs-release
           path: |
             build_vs_ci/**/CMakeFiles/CMakeOutput.log
             build_vs_ci/**/CMakeFiles/CMakeError.log
             build_vs_ci/**/Testing/**
+
+  build-and-test-windows-debug:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clean previous build dir
+        run: |
+          if (Test-Path build_vs26) { Remove-Item -Recurse -Force build_vs26 }
+
+      - name: Configure (Preset VS2026 Debug)
+        run: |
+          cmake --preset vs2026-debug
+
+      - name: Build (Preset Debug)
+        run: |
+          cmake --build --preset vs2026-debug -- /m
+
+      - name: Run tests (CTest Preset Debug)
+        run: |
+          ctest --preset vs2026-debug --output-on-failure
+
+      - name: Archive logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ci-logs-debug
+          path: |
+            build_vs26/**/CMakeFiles/CMakeOutput.log
+            build_vs26/**/CMakeFiles/CMakeError.log
+            build_vs26/**/Testing**
