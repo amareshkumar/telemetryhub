@@ -68,6 +68,42 @@ telemetryhub/
 
 ## cpp-httplib integration
 
+## Build with CMake Presets (recommended)
+
+Cross-platform builds and CI use `CMakePresets.json` for consistent configuration.
+
+- Linux (ASAN+UBSAN):
+   ```bash
+   cmake --preset linux-ninja-asan-ubsan
+   cmake --build --preset linux-ninja-asan-ubsan -v
+   ctest --preset linux-ninja-asan-ubsan --output-on-failure
+   ```
+- Linux (TSan):
+   ```bash
+   cmake --preset linux-ninja-tsan
+   cmake --build --preset linux-ninja-tsan -v
+   ctest --preset linux-ninja-tsan --output-on-failure
+   ```
+- Windows (local VS 2026):
+   ```powershell
+   cmake --preset vs2026-release
+   cmake --build --preset vs2026-release -v
+   ctest --preset vs2026-release --output-on-failure
+   ```
+- Windows (CI on GitHub runners):
+   The runners provide Visual Studio 2022, so CI uses the `vs2022-release-ci` preset:
+   ```powershell
+   cmake --preset vs2022-release-ci
+   cmake --build --preset vs2022-release-ci -v
+   ctest --preset vs2022-release-ci --output-on-failure
+   ```
+
+Notes:
+- If you switch presets or toolchains, start from a clean build folder (remove `build*` directories) to avoid stale CMake cache or `_deps` artifacts.
+- The HTTP server currently disables optional `cpp-httplib` features (OpenSSL/zlib/brotli/zstd) to keep builds dependency-light across platforms.
+
+See also: `docs/verify_rest.md` for step-by-step REST verification on Windows and Linux.
+
 ### Windows (Developer PowerShell) quick start
 
 - Prereqs: Visual Studio with C++ toolchain, use Developer PowerShell.
@@ -93,39 +129,18 @@ If you see MSYS header errors (e.g., `C:/msys64/ucrt64/include/...` and `__asm__
 - Verifying library architecture via `dumpbin`/`link.exe`
 - Clean rebuild steps and quick verification commands
 
-## Verifying Real HTTP Integration
+## Quick HTTP verification
 
-Steps to confirm the gateway uses the real `cpp-httplib` and integration tests pass:
+Windows (Release preset):
+```powershell
+cmake --preset vs2026-release
+cmake --build --preset vs2026-release -v
+ctest --preset vs2026-release -R http_integration --output-on-failure
+```
 
-1. Configure with stub disabled:
-   ```powershell
-   cmake -G "Visual Studio 18 2026" -A x64 -T host=x64 .. -DUSE_HTTPLIB_STUB=OFF -DCMAKE_BUILD_TYPE=Debug
-   ```
-2. Ensure FetchContent pulled httplib (look for `httplib` messages or `_deps/httplib-src/httplib.h` in the build directory).
-3. Verify no stub macro remains: `gateway/src/http_server.cpp` should only have `#include <httplib.h>`.
-4. Build target:
-   ```powershell
-   cmake --build . --config Debug --target gateway_app
-   ```
-5. Manual run:
-   ```powershell
-   .\gateway\Debug\gateway_app.exe
-   ```
-   Expect log: `Listening on port 8080`.
-6. Manual endpoint check (separate shell):
-   ```powershell
-   Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
-   Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
-   Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop  | Select-Object -ExpandProperty Content
-   ```
-7. Integration test (Windows):
-   ```powershell
-   ctest -C Debug -R http_integration --output-on-failure
-   ```
-   Pass criteria: script prints `HTTP integration test passed`.
-8. Confirm build artifacts link against `httplib` target (check `gateway_app.vcxproj` IncludePath contains `_deps/httplib-src`).
-
-If failures occur:
-- Check PATH for stray `C:\msys64` entries; re-open Developer PowerShell if present.
-- Re-run configure after deleting `CMakeCache.txt` if the `httplib` target is missing.
-- Search for any lingering `USE_HTTPLIB_STUB` text (`git grep USE_HTTPLIB_STUB`) — should return nothing.
+Linux (ASAN+UBSAN preset):
+```bash
+cmake --preset linux-ninja-asan-ubsan
+cmake --build --preset linux-ninja-asan-ubsan -v
+ctest --preset linux-ninja-asan-ubsan -R test_gateway_e2e --output-on-failure
+```
