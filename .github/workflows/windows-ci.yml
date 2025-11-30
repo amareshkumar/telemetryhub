@@ -70,17 +70,17 @@ jobs:
         run: |
           if (Test-Path build_vs26) { Remove-Item -Recurse -Force build_vs26 }
 
-      - name: Configure (Preset VS2026 Debug)
+      - name: Configure (Preset VS2022 Debug)
         run: |
-          cmake --preset vs2026-debug
+          cmake --preset vs2022-debug
 
       - name: Build (Preset Debug)
         run: |
-          cmake --build --preset vs2026-debug -- /m
+          cmake --build --preset vs2022-debug -- /m
 
       - name: Run tests (CTest Preset Debug)
         run: |
-          ctest --preset vs2026-debug --output-on-failure
+          ctest --preset vs2022-debug --output-on-failure
 
       - name: Archive logs on failure
         if: failure()
@@ -88,6 +88,6 @@ jobs:
         with:
           name: windows-ci-logs-debug
           path: |
-            build_vs26/**/CMakeFiles/CMakeOutput.log
-            build_vs26/**/CMakeFiles/CMakeError.log
-            build_vs26/**/Testing**
+            build_vs_ci_dbg/**/CMakeFiles/CMakeOutput.log
+            build_vs_ci_dbg/**/CMakeFiles/CMakeError.log
+            build_vs_ci_dbg/**/Testing**
