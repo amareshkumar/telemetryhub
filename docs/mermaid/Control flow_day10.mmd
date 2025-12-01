@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Client as HTTP Client (Invoke-WebRequest/curl)
+    participant App as gateway_app (REST server)
+    participant Core as GatewayCore
+    participant Q as TelemetryQueue
+    participant Dev as Device
+
+    Client->>App: POST /start
+    App->>Core: start()
+    Core->>Dev: start()
+    Core->>Q: push samples
+
+    loop monitoring
+        Client->>App: GET /status
+        App->>Core: device_state(), latest_sample()
+        Core-->>App: state + sample
+        App-->>Client: JSON { state, latest_sample }
+    end
+
+    Client->>App: POST /stop
+    App->>Core: stop()
+    Core->>Dev: stop()
