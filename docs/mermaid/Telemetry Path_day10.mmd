@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Dev as Device
+    participant Prod as ProducerThread
+    participant Cons as ConsumerThread
+    participant Q as TelemetryQueue
+    participant Gate as GatewayCore
+    participant API as REST (cpp-httplib)
+    participant Client as HTTP Client (pwsh/curl)
+
+    loop sampling
+        Prod->>Dev: read_sample()
+        Dev-->>Prod: TelemetrySample
+        Prod->>Q: push(sample)
+    end
+
+    loop consumption
+        Cons->>Q: pop()
+        Q-->>Cons: TelemetrySample
+        Cons->>Gate: update latest_sample & state
+    end
+
+    Client->>API: GET /status
+    API->>Gate: query state + latest_sample
+    Gate-->>API: state + sample
+    API-->>Client: JSON response
+
+    Client->>API: POST /start
+    API->>Gate: start()
+    Client->>API: POST /stop
+    API->>Gate: stop()
