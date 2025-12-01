@@ -73,7 +73,7 @@ set(CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS OFF)
 # Optionally: warnings, sanitizers, etc. in cmake/ConfigWarnings.cmake
 # include(cmake/ConfigWarnings.cmake)
 
-# option(BUILD_GUI "Build Qt GUI" ON)
+option(BUILD_GUI "Build Qt GUI" ON)
 option(BUILD_TESTING "Build tests" ON)
 
 add_subdirectory(device)
@@ -110,7 +110,7 @@ target_compile_definitions(gateway_app PRIVATE
 )
 
 if (BUILD_GUI)
-    # add_subdirectory(gui)
+  add_subdirectory(gui)
 endif()
 
 if (BUILD_TESTING)
