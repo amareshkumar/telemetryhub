@@ -130,3 +130,6 @@ Steps to confirm the gateway uses the real `cpp-httplib` and integration tests p
 If failures occur:
 - Check PATH for stray `C:\msys64` entries; re-open Developer PowerShell if present.
  - Re-run configure after deleting `CMakeCache.txt` if the `httplib` target is missing.
+
+## Mermaid .mmd and image files 
+Refer @render_mermaid.ps1 for generation of images and steps
