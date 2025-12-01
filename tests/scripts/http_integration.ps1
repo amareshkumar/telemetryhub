@@ -53,11 +53,14 @@ try {
   # Start and wait for Measuring
   $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
   if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
-  $deadline2 = [DateTime]::UtcNow.AddSeconds(3)
+  # Allow device to transition to Measuring; some environments may be slower
+  $deadline2 = [DateTime]::UtcNow.AddSeconds(12)
   $measuring = $false
   while ([DateTime]::UtcNow -lt $deadline2) {
-    $sr = (Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content) | ConvertFrom-Json
+    $srRaw = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+    $sr = $srRaw | ConvertFrom-Json
     if ($sr.state -eq 'Measuring') { $measuring = $true; break }
+    Write-Host "state=$($sr.state) latest_seq=$($sr.latest_sample.seq)" -ForegroundColor DarkGray
     Start-Sleep -Milliseconds 200
   }
   if (-not $measuring) { throw "State did not become Measuring after start" }
