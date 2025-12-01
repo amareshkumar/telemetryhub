@@ -133,3 +133,19 @@ If failures occur:
 
 ## Mermaid .mmd and image files 
 Refer @render_mermaid.ps1 for generation of images and steps
+
+## GUI Quick Start (Qt)
+- Prereqs: Qt6 MSVC kit (e.g., `C:\Qt\6.10.x\msvc2022_64`). Set once per shell:
+   ```powershell
+   $env:THUB_QT_ROOT = "C:\Qt\6.10.1\msvc2022_64"
+   ```
+- Configure & build with preset:
+   ```powershell
+   cmake --preset vs2026-gui
+   cmake --build --preset vs2026-gui
+   ```
+- Run gateway + GUI with helper:
+   ```powershell
+   pwsh -File tools/run_gui.ps1 -ApiBase "http://127.0.0.1:8080"
+   ```
+Notes: The GUI reads `THUB_API_BASE` and polls `/status` every second. Buttons enable/disable based on device state.

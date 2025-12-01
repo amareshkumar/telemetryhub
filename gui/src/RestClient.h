@@ -8,6 +8,7 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 
+// Thin REST client for TelemetryHub API
 class RestClient : public QObject {
     Q_OBJECT
 public:

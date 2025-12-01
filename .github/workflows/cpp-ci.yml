@@ -67,6 +67,37 @@ jobs:
         run: |
           if [ -f build_vs_ci/gateway/Release/gateway_app.exe ]; then build_vs_ci/gateway/Release/gateway_app.exe --version; fi
           if [ -f build_vs_ci/gateway_app.exe ]; then build_vs_ci/gateway_app.exe --version; fi
+  windows-gui:
+    name: Windows GUI (Qt build)
+    runs-on: windows-latest
+    env:
+      QT_VERSION: 6.7.3
+      QT_HOST: windows
+      QT_ARCH: msvc2022_64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: ${{ env.QT_HOST }}
+          arch: ${{ env.QT_ARCH }}
+          cache: true
+
+      - name: Configure (GUI Preset VS2022)
+        shell: bash
+        env:
+          Qt6_DIR: ${{ env.Qt6_DIR }}
+        run: cmake --preset vs2022-gui
+
+      - name: Build GUI
+        shell: bash
+        run: cmake --build --preset vs2022-gui -v
   linux-tsan:
     name: Linux (TSan via Presets)
     runs-on: ubuntu-latest

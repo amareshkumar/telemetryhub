@@ -68,12 +68,15 @@ MainWindow::~MainWindow() = default;
 void MainWindow::onStartClicked() {
     startButton_->setEnabled(false);
     client_->sendStart([this](bool ok, const QString& err){
-        startButton_->setEnabled(true);
         if (!ok) {
+            startButton_->setEnabled(true);
             statusBar()->showMessage(QStringLiteral("Start failed: ") + err, 3000);
             QMessageBox::warning(this, "Start", err);
         } else {
             statusBar()->showMessage("Start sent", 1500);
+            // Optimistically reflect expected state until next refresh
+            startButton_->setEnabled(false);
+            stopButton_->setEnabled(true);
             onRefresh();
         }
     });
@@ -82,12 +85,15 @@ void MainWindow::onStartClicked() {
 void MainWindow::onStopClicked() {
     stopButton_->setEnabled(false);
     client_->sendStop([this](bool ok, const QString& err){
-        stopButton_->setEnabled(true);
         if (!ok) {
+            stopButton_->setEnabled(true);
             statusBar()->showMessage(QStringLiteral("Stop failed: ") + err, 3000);
             QMessageBox::warning(this, "Stop", err);
         } else {
             statusBar()->showMessage("Stop sent", 1500);
+            // Optimistically reflect expected state until next refresh
+            startButton_->setEnabled(true);
+            stopButton_->setEnabled(false);
             onRefresh();
         }
     });
@@ -109,6 +115,19 @@ void MainWindow::onRefresh() {
         }
         const auto state = json.value("state").toString("unknown");
         stateLabel_->setText(QString("State: ") + state);
+        // Enable/disable buttons based on device state
+        // Idle: can Start; Measuring: can Stop; Error/SafeState: neither action
+        const QString s = state.toLower();
+        if (s == "idle") {
+            startButton_->setEnabled(true);
+            stopButton_->setEnabled(false);
+        } else if (s == "measuring") {
+            startButton_->setEnabled(false);
+            stopButton_->setEnabled(true);
+        } else {
+            startButton_->setEnabled(false);
+            stopButton_->setEnabled(false);
+        }
         const auto latest = json.value("latest_sample");
         if (latest.isObject()) {
             valueLabel_->setText(QString("Latest: ") + sampleToText(latest.toObject()));

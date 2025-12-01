@@ -44,17 +44,29 @@ if (-not $tn) {
 }
 
 try {
-  # Status
-  $status = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
-  if (-not $status) { throw "Empty status response" }
+  # Status (parse JSON)
+  $statusRaw = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+  if (-not $statusRaw) { throw "Empty status response" }
+  $status = $statusRaw | ConvertFrom-Json
+  if (-not $status.state) { throw "Missing 'state' in status JSON: $statusRaw" }
 
-  # Start
+  # Start and wait for Measuring
   $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
   if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
+  $deadline2 = [DateTime]::UtcNow.AddSeconds(3)
+  $measuring = $false
+  while ([DateTime]::UtcNow -lt $deadline2) {
+    $sr = (Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content) | ConvertFrom-Json
+    if ($sr.state -eq 'Measuring') { $measuring = $true; break }
+    Start-Sleep -Milliseconds 200
+  }
+  if (-not $measuring) { throw "State did not become Measuring after start" }
 
-  # Stop
+  # Stop and verify not Measuring
   $stopResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop | Select-Object -ExpandProperty Content
   if ($stopResp -notmatch '"ok":true') { throw "Stop failed: $stopResp" }
+  $sr2 = (Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content) | ConvertFrom-Json
+  if ($sr2.state -eq 'Measuring') { throw "State still Measuring after stop" }
 
   Write-Host "HTTP integration test passed"
   exit 0
