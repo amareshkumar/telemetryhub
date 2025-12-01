@@ -70,6 +70,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 ## can accidentally pick up MSYS include paths from the environment.
 set(CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS OFF)
 
+# Ensure MSVC reports a correct __cplusplus for Qt checks
+if (MSVC)
+  add_compile_options(/Zc:__cplusplus)
+endif()
+
 # Optionally: warnings, sanitizers, etc. in cmake/ConfigWarnings.cmake
 # include(cmake/ConfigWarnings.cmake)
 

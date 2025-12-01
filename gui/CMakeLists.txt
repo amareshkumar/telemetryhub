@@ -1,3 +1,11 @@
+# links Qt6::Widgets and Qt6::Network
+cmake_minimum_required(VERSION 3.20)
+
+# Enable Qt's automatic processing for moc/uic/rcc
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 add_executable(gui_app

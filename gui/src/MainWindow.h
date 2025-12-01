@@ -10,6 +10,7 @@ class RestClient;
 
 namespace telemetryhub::gateway { class GatewayCore; }
 
+// UI skeleton for TelemetryHub GUI
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
