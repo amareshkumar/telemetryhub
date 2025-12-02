@@ -47,10 +47,23 @@ void RestClient::doPost(const QString& path, std::function<void(bool, const QStr
 
     QObject::connect(reply, &QNetworkReply::finished, reply, [reply, onDone]() {
         const auto status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        const auto data = reply->readAll();
         if (reply->error() != QNetworkReply::NoError) {
             onDone(false, QString::fromUtf8("HTTP error %1: %2").arg(status).arg(reply->errorString()));
+        } else if (status < 200 || status >= 300) {
+            onDone(false, QString::fromUtf8("Unexpected HTTP status %1").arg(status));
         } else {
-            onDone(true, QString());
+            auto doc = QJsonDocument::fromJson(data);
+            if (!doc.isObject()) {
+                onDone(false, QStringLiteral("Malformed JSON in response"));
+            } else {
+                QJsonObject obj = doc.object();
+                if (obj.value("ok").toBool(false)) {
+                    onDone(true, QString());
+                } else {
+                    onDone(false, QStringLiteral("Operation failed: missing or false 'ok' field"));
+                }
+            }
         }
         reply->deleteLater();
     });
