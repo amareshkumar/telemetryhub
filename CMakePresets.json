@@ -36,21 +36,21 @@
         "C_INCLUDE_PATH": ""
       }
     },
-      {
-        "name": "vs2022-gui",
-        "displayName": "VS 2022 (x64, GUI Release)",
-        "generator": "Visual Studio 17 2022",
-        "architecture": "x64",
-        "binaryDir": "${sourceDir}/build_vs_gui",
-        "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Release",
-          "BUILD_TESTING": "ON",
-          "BUILD_GUI": "ON",
-          "CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS": "OFF",
-          "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-          "CMAKE_PREFIX_PATH": "$env{Qt6_DIR}"
-        }
-      },
+    {
+      "name": "vs2022-gui",
+      "displayName": "VS 2022 (x64, GUI Release)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build_vs_gui",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "ON",
+        "BUILD_GUI": "ON",
+        "CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_PREFIX_PATH": "$env{Qt6_DIR}"
+      }
+    },
     {
       "name": "vs2022-release-ci",
       "displayName": "VS 2022 (x64, Release, CI)",
