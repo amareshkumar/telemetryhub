@@ -93,7 +93,6 @@ void MainWindow::onStopClicked() {
             statusBar()->showMessage("Stop sent", 1500);
             // Optimistically reflect expected state until next refresh
             startButton_->setEnabled(true);
-            stopButton_->setEnabled(false);
             onRefresh();
         }
     });
