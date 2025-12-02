@@ -60,6 +60,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
         "CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       },
