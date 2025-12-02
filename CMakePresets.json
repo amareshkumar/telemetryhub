@@ -82,6 +82,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     }
@@ -94,6 +95,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_ASAN": "ON",
         "ENABLE_UBSAN": "ON",
@@ -108,6 +110,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_TSAN": "ON",
         "ENABLE_ASAN": "OFF",
