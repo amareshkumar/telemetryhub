@@ -132,7 +132,7 @@ If failures occur:
  - Re-run configure after deleting `CMakeCache.txt` if the `httplib` target is missing.
 
 ## Mermaid .mmd and image files 
-Refer @render_mermaid.ps1 for generation of images and steps
+Refer to @render_mermaid.ps1 for generation of images and steps
 
 ## GUI Quick Start (Qt)
 - Prereqs: Qt6 MSVC kit (e.g., `C:\Qt\6.10.1\msvc2022_64`). Set once per shell:
