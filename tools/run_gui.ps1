@@ -33,7 +33,8 @@ param(
   [string]$ApiBase = 'http://127.0.0.1:8080',
   [string]$GatewayExe = 'build_vs26\gateway\Release\gateway_app.exe',
   [string]$GuiExe = 'build_vs26\gui\Release\gui_app.exe',
-  [int]$WaitTimeoutSec = 20
+  [int]$WaitTimeoutSec = 20,
+  [switch]$DeployLocal
 )
 
 function Write-Info($msg){ Write-Host "[run_gui] $msg" }
@@ -60,18 +61,31 @@ if (-not $QtRoot -or -not (Test-Path $QtRoot)) {
   Fail "Could not locate a valid Qt MSVC kit. Set -QtRoot or THUB_QT_ROOT."
 }
 
-# Prepare Qt runtime environment (PATH + plugin path)
+# Prepare Qt runtime environment (PATH + plugin path) or deploy locally
 $qtBin = Join-Path $QtRoot 'bin'
 $qtPlugins = Join-Path $QtRoot 'plugins'
-$env:PATH = "$qtBin;$env:PATH"
-if (Test-Path $qtPlugins) { $env:QT_PLUGIN_PATH = $qtPlugins }
-Write-Info "Qt runtime configured from: $QtRoot"
+if (-not $DeployLocal) {
+  $env:PATH = "$qtBin;$env:PATH"
+  if (Test-Path $qtPlugins) { $env:QT_PLUGIN_PATH = $qtPlugins }
+  Write-Info "Qt runtime configured from: $QtRoot"
+}
 
 # Ensure gateway is running/healthy
 $gatewayFull = Join-Path $repoRoot $GatewayExe
 $guiFull = Join-Path $repoRoot $GuiExe
 if (-not (Test-Path $guiFull)) { Fail "GUI exe not found at $guiFull" }
 if (-not (Test-Path $gatewayFull)) { Write-Info "Gateway exe not found at $gatewayFull (will only attempt to connect)." }
+
+# If requested, deploy Qt DLLs next to the GUI so it can run standalone
+if ($DeployLocal) {
+  $windeployqt = @(
+    (Join-Path $qtBin 'windeployqt6.exe'),
+    (Join-Path $qtBin 'windeployqt.exe')
+  ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+  if (-not $windeployqt) { Fail "windeployqt not found under $qtBin. Install Qt tools or unset -DeployLocal." }
+  Write-Info "Deploying Qt runtime via: $windeployqt"
+  & $windeployqt --release --compiler-runtime --verbose=1 "$guiFull" | Write-Host
+}
 
 # Check health
 $healthy = $false
