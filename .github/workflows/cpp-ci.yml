@@ -145,7 +145,6 @@ jobs:
           Copy-Item -Recurse -Force "$appDir\\*.dll" $bundle -ErrorAction SilentlyContinue
           if (Test-Path "$appDir\\platforms") { Copy-Item -Recurse -Force "$appDir\\platforms" $bundle }
           if (Test-Path "$appDir\\styles") { Copy-Item -Recurse -Force "$appDir\\styles" $bundle }
-          if (Test-Path "$appDir\\styles") { Copy-Item -Recurse -Force "$appDir\\styles" $bundle }
           if (Test-Path "$appDir\\opengl32sw.dll") { Copy-Item -Force "$appDir\\opengl32sw.dll" $bundle }
 
       - name: Upload GUI bundle artifact
