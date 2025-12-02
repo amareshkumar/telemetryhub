@@ -141,8 +141,8 @@ Refer to @render_mermaid.ps1 for generation of images and steps
    ```
 - Configure & build with preset:
    ```powershell
-   cmake --preset vs2026-gui
-   cmake --build --preset vs2026-gui
+   cmake --preset vs2022-gui
+   cmake --build --preset vs2022-gui
    ```
 - Run gateway + GUI with helper:
    ```powershell
