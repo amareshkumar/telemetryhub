@@ -3,7 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
+## [Unreleased]
+## [1.1.0] - 2025-12-02
+**Title:** Add QT GUI to check for start/stop and status
+
 ## [Released]
+## [1.0.0] - 2025-02-12
+**Title:** REST http server + CI/presets + gitcore app + Mermaid code and images
 
 ## [0.9.0] - 2025-11-30
 **Title:** Real HTTP Gateway, Stable Cross-Platform Builds
