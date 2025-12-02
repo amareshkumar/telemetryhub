@@ -39,6 +39,7 @@ jobs:
           if [ -f build_asan/gateway/gateway_app ]; then build_asan/gateway/gateway_app --version; fi
           if [ -f build_asan/gateway_app ]; then build_asan/gateway_app --version; fi
   windows:
+    if: ${{ github.event_name != 'pull_request' }}
     name: Windows (MSVC via Presets)
     runs-on: windows-latest
     steps:
@@ -68,6 +69,7 @@ jobs:
           if [ -f build_vs_ci/gateway/Release/gateway_app.exe ]; then build_vs_ci/gateway/Release/gateway_app.exe --version; fi
           if [ -f build_vs_ci/gateway_app.exe ]; then build_vs_ci/gateway_app.exe --version; fi
   windows-gui:
+    if: ${{ github.event_name != 'pull_request' }}
     name: Windows GUI (Qt build)
     runs-on: windows-latest
     env:
