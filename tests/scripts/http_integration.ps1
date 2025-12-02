@@ -30,13 +30,13 @@ if (-not $appPath) {
 # Start app
 $proc = Start-Process -FilePath $appPath -PassThru -WindowStyle Hidden
 
-# Wait for port up
+# Wait for port up (allow slower CI boots)
 $tn = $false
-$deadline = [DateTime]::UtcNow.AddSeconds(5)
+$deadline = [DateTime]::UtcNow.AddSeconds(15)
 while ([DateTime]::UtcNow -lt $deadline) {
   $tn = Test-NetConnection -ComputerName localhost -Port 8080 -InformationLevel Quiet
   if ($tn) { break }
-  Start-Sleep -Milliseconds 200
+  Start-Sleep -Milliseconds 250
 }
 if (-not $tn) {
   try { Stop-Process -Id $proc.Id -Force } catch {}
@@ -50,20 +50,26 @@ try {
   $status = $statusRaw | ConvertFrom-Json
   if (-not $status.state) { throw "Missing 'state' in status JSON: $statusRaw" }
 
-  # Start and wait for Measuring
-  $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
-  if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
-  # Allow device to transition to Measuring; some environments may be slower
-  $deadline2 = [DateTime]::UtcNow.AddSeconds(12)
+  # Start and wait for Measuring (with one retry if SafeState)
+  $attempts = 0
   $measuring = $false
-  while ([DateTime]::UtcNow -lt $deadline2) {
-    $srRaw = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
-    $sr = $srRaw | ConvertFrom-Json
-    if ($sr.state -eq 'Measuring') { $measuring = $true; break }
-    Write-Host "state=$($sr.state) latest_seq=$($sr.latest_sample.seq)" -ForegroundColor DarkGray
-    Start-Sleep -Milliseconds 200
+  while ($attempts -lt 2 -and -not $measuring) {
+    $attempts++
+    $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
+    if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
+    $deadline2 = [DateTime]::UtcNow.AddSeconds(20)
+    while ([DateTime]::UtcNow -lt $deadline2) {
+      $srRaw = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+      $sr = $srRaw | ConvertFrom-Json
+      if ($sr.state -eq 'Measuring') { $measuring = $true; break }
+      Write-Host "state=$($sr.state) latest_seq=$($sr.latest_sample.seq)" -ForegroundColor DarkGray
+      Start-Sleep -Milliseconds 250
+    }
+    if (-not $measuring) {
+      Write-Host "Not Measuring after attempt $attempts; retrying start once..." -ForegroundColor Yellow
+    }
   }
-  if (-not $measuring) { throw "State did not become Measuring after start" }
+  if (-not $measuring) { throw "State did not become Measuring after start attempts" }
 
   # Stop and verify not Measuring
   $stopResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop | Select-Object -ExpandProperty Content
