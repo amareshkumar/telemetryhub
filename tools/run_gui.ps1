@@ -72,6 +72,14 @@ if (-not $DeployLocal) {
 
 # Ensure gateway is running/healthy
 $gatewayFull = Join-Path $repoRoot $GatewayExe
+# Fallback: if default path doesn't exist, try typical VS2022 GUI path
+if (-not (Test-Path $gatewayFull)) {
+  $fallback = Join-Path $repoRoot 'build_vs_gui\gateway\Release\gateway_app.exe'
+  if (Test-Path $fallback) {
+    $GatewayExe = 'build_vs_gui\gateway\Release\gateway_app.exe'
+    $gatewayFull = $fallback
+  }
+}
 $guiFull = Join-Path $repoRoot $GuiExe
 if (-not (Test-Path $guiFull)) { Fail "GUI exe not found at $guiFull" }
 if (-not (Test-Path $gatewayFull)) { Write-Info "Gateway exe not found at $gatewayFull (will only attempt to connect)." }
@@ -96,7 +104,7 @@ try {
 
 if (-not $healthy -and (Test-Path $gatewayFull)) {
   Write-Info "Starting gateway..."
-  $gw = Start-Process -FilePath $gatewayFull -ArgumentList @('--log-level','info') -PassThru
+  Start-Process -FilePath $gatewayFull -ArgumentList @('--log-level','info') | Out-Null
   Start-Sleep -Seconds 1
 }
 
