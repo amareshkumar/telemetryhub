@@ -71,7 +71,7 @@ jobs:
     name: Windows GUI (Qt build)
     runs-on: windows-latest
     env:
-      QT_VERSION: 6.7.3
+      QT_VERSION: 6.10.1
       QT_HOST: windows
       QT_ARCH: msvc2022_64
     steps:
