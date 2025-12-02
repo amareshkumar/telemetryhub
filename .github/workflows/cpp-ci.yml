@@ -133,8 +133,6 @@ jobs:
 
       - name: Configure (GUI Preset VS2022)
         shell: bash
-        env:
-          Qt6_DIR: ${{ env.Qt6_DIR }}
         run: cmake --preset vs2022-gui
 
       - name: Build GUI
