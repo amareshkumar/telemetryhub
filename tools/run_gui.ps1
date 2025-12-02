@@ -8,7 +8,7 @@
   - Waits until /status responds, then launches the GUI.
 
 .PARAMETER QtRoot
-  Path to Qt MSVC kit root (e.g., C:\Qt\6.10.0\msvc2022_64). Defaults to $env:THUB_QT_ROOT.
+  Path to Qt MSVC kit root (e.g., C:\Qt\6.10.1\msvc2022_64). Defaults to $env:THUB_QT_ROOT.
   If not provided, attempts simple auto-detection under C:\Qt.
 
 .PARAMETER ApiBase
@@ -24,7 +24,7 @@
   Seconds to wait for /status to become ready. Default: 20
 
 .EXAMPLE
-  pwsh -File tools/run_gui.ps1 -QtRoot C:\Qt\6.10.0\msvc2022_64 -ApiBase http://127.0.0.1:8080
+  pwsh -File tools/run_gui.ps1 -QtRoot C:\Qt\6.10.1\msvc2022_64 -ApiBase http://127.0.0.1:8080
 #>
 
 [CmdletBinding()]

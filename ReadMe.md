@@ -135,7 +135,7 @@ If failures occur:
 Refer @render_mermaid.ps1 for generation of images and steps
 
 ## GUI Quick Start (Qt)
-- Prereqs: Qt6 MSVC kit (e.g., `C:\Qt\6.10.x\msvc2022_64`). Set once per shell:
+- Prereqs: Qt6 MSVC kit (e.g., `C:\Qt\6.10.1\msvc2022_64`). Set once per shell:
    ```powershell
    $env:THUB_QT_ROOT = "C:\Qt\6.10.1\msvc2022_64"
    ```
