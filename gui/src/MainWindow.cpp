@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QPointer>
 
 static QUrl defaultApiBase() {
     const auto env = qEnvironmentVariable("THUB_API_BASE");
@@ -67,30 +68,34 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::onStartClicked() {
     startButton_->setEnabled(false);
-    client_->sendStart([this](bool ok, const QString& err){
+    QPointer<MainWindow> self = this;
+    client_->sendStart([self](bool ok, const QString& err){
+        if (!self) return; // MainWindow was destroyed
         if (!ok) {
-            startButton_->setEnabled(true);
-            statusBar()->showMessage(QStringLiteral("Start failed: ") + err, 3000);
-            QMessageBox::warning(this, "Start", err);
+            self->startButton_->setEnabled(true);
+            self->statusBar()->showMessage(QStringLiteral("Start failed: ") + err, 3000);
+            QMessageBox::warning(self, "Start", err);
         } else {
-            statusBar()->showMessage("Start sent", 1500);
+            self->statusBar()->showMessage("Start sent", 1500);
             // Optimistically reflect expected state until next refresh
-            startButton_->setEnabled(false);
-            stopButton_->setEnabled(true);
-            onRefresh();
+            self->startButton_->setEnabled(false);
+            self->stopButton_->setEnabled(true);
+            self->onRefresh();
         }
     });
 }
 
 void MainWindow::onStopClicked() {
     stopButton_->setEnabled(false);
-    client_->sendStop([this](bool ok, const QString& err){
+    QPointer<MainWindow> self = this;
+    client_->sendStop([self](bool ok, const QString& err){
+        if (!self) return; // MainWindow was destroyed
         if (!ok) {
-            stopButton_->setEnabled(true);
-            statusBar()->showMessage(QStringLiteral("Stop failed: ") + err, 3000);
-            QMessageBox::warning(this, "Stop", err);
+            self->stopButton_->setEnabled(true);
+            self->statusBar()->showMessage(QStringLiteral("Stop failed: ") + err, 3000);
+            QMessageBox::warning(self, "Stop", err);
         } else {
-            statusBar()->showMessage("Stop sent", 1500);
+            self->statusBar()->showMessage("Stop sent", 1500);
             // Optimistically reflect expected state until next refresh
             startButton_->setEnabled(true);
             onRefresh();
@@ -107,31 +112,33 @@ static QString sampleToText(const QJsonObject& obj) {
 }
 
 void MainWindow::onRefresh() {
-    client_->getStatus([this](const QJsonObject& json, const QString& err){
+    QPointer<MainWindow> self = this;
+    client_->getStatus([self](const QJsonObject& json, const QString& err){
+        if (!self) return; // MainWindow was destroyed
         if (!err.isEmpty()) {
-            statusBar()->showMessage(QStringLiteral("Refresh failed: ") + err, 3000);
+            self->statusBar()->showMessage(QStringLiteral("Refresh failed: ") + err, 3000);
             return;
         }
         const auto state = json.value("state").toString("unknown");
-        stateLabel_->setText(QString("State: ") + state);
+        self->stateLabel_->setText(QString("State: ") + state);
         // Enable/disable buttons based on device state
         // Idle: can Start; Measuring: can Stop; Error/SafeState: neither action
         const QString s = state.toLower();
         if (s == "idle") {
-            startButton_->setEnabled(true);
-            stopButton_->setEnabled(false);
+            self->startButton_->setEnabled(true);
+            self->stopButton_->setEnabled(false);
         } else if (s == "measuring") {
-            startButton_->setEnabled(false);
-            stopButton_->setEnabled(true);
+            self->startButton_->setEnabled(false);
+            self->stopButton_->setEnabled(true);
         } else {
-            startButton_->setEnabled(false);
-            stopButton_->setEnabled(false);
+            self->startButton_->setEnabled(false);
+            self->stopButton_->setEnabled(false);
         }
         const auto latest = json.value("latest_sample");
         if (latest.isObject()) {
-            valueLabel_->setText(QString("Latest: ") + sampleToText(latest.toObject()));
+            self->valueLabel_->setText(QString("Latest: ") + sampleToText(latest.toObject()));
         } else {
-            valueLabel_->setText("Latest: (none)");
+            self->valueLabel_->setText("Latest: (none)");
         }
     });
 }
