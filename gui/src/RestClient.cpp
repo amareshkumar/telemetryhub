@@ -3,8 +3,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QEventLoop>
-#include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
 
