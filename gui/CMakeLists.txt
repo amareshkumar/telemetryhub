@@ -6,7 +6,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
+# Enforce minimum Qt version to avoid tool mismatch
+find_package(Qt6 6.10.1 REQUIRED COMPONENTS Widgets Network)
 
 add_executable(gui_app
     src/main_gui.cpp

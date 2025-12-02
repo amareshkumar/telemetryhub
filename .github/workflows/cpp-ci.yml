@@ -89,6 +89,28 @@ jobs:
           arch: ${{ env.QT_ARCH }}
           cache: true
 
+      - name: "Guardrail: Verify Qt version is 6.10.1"
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $expected = '6.10.1'
+          if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
+          if ($env:Qt6_DIR -notmatch [regex]::Escape($expected)) {
+            throw "Qt6_DIR ('$env:Qt6_DIR') does not include expected $expected"
+          }
+          # Try qtpaths to double-check runtime version
+          $qtRoot = Resolve-Path (Join-Path $env:Qt6_DIR '..\..\..')
+          $qtpaths = @(
+            (Join-Path $qtRoot 'bin/qtpaths6.exe'),
+            (Join-Path $qtRoot 'bin/qtpaths.exe')
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ($qtpaths) {
+            $ver = & $qtpaths --qt-version
+            if ($ver -ne $expected) { throw "qtpaths reported Qt $ver, expected $expected" }
+          } else {
+            Write-Host 'qtpaths not found; relying on Qt6_DIR path check.'
+          }
+
       - name: Configure (GUI Preset VS2022)
         shell: bash
         env:
