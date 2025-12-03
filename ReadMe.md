@@ -208,3 +208,9 @@ Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Se
 Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop  | Select-Object -ExpandProperty Content
 ctest -C Release -R http_integration --output-on-failure
 ```
+
+## Release Notes
+
+See the [CHANGELOG](CHANGELOG.md) for full version history.
+
+Latest release: **v1.1.0**
