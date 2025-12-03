@@ -3,9 +3,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
-## [Unreleased]
+## [Released]
 ## [1.1.0] - 2025-12-02
-**Title:** Add QT GUI to check for start/stop and status
+**Title:** Qt6 GUI Application
+
+### Added
+- New Qt6 GUI application (`gui/`) with:
+  - Live status display
+  - Start/Stop measurement controls
+  - REST client abstraction for polling `/status`
+  - PowerShell launcher to handle deployment (`run_gui.ps1`)
+- Windows GUI build job integrated into GitHub Actions
+- REST API helper for GUI communication (`RestClient`)
+
+### Changed
+- Improved HTTP integration test:
+  - CI-aware "smoke test" mode
+  - More robust JSON parsing and logging
+  - Better handling of SafeState and sequence values
+- Updated CMake presets for Windows GUI builds (VS2022/VS2026)
+- Updated README with GUI instructions and build matrix
+
+### Fixed
+- Eliminated CI timeouts caused by Measuring-state waits
+- Fixed IPv6 localhost connection warnings by using IPv4 in tests
+- Stabilized Windows integration tests and port startup logic
+
 
 ## [Released]
 ## [1.0.0] - 2025-02-12
