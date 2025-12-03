@@ -45,7 +45,7 @@ if (-not $tn) {
 
 try {
   # Status (parse JSON)
-  $statusRaw = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+  $statusRaw = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8080/status | Select-Object -ExpandProperty Content
   if (-not $statusRaw) { throw "Empty status response" }
   $status = $statusRaw | ConvertFrom-Json
   if (-not $status.state) { throw "Missing 'state' in status JSON: $statusRaw" }
@@ -55,11 +55,11 @@ try {
   $measuring = $false
   while ($attempts -lt 2 -and -not $measuring) {
     $attempts++
-    $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
+    $startResp = Invoke-WebRequest -UseBasicParsing -Method POST http://127.0.0.1:8080/start | Select-Object -ExpandProperty Content
     if ($startResp -notmatch '"ok":true') { throw "Start failed: $startResp" }
     $deadline2 = [DateTime]::UtcNow.AddSeconds(20)
     while ([DateTime]::UtcNow -lt $deadline2) {
-      $srRaw = Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
+      $srRaw = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8080/status | Select-Object -ExpandProperty Content
       $sr = $srRaw | ConvertFrom-Json
       if ($sr.state -eq 'Measuring') { $measuring = $true; break }
       Write-Host "state=$($sr.state) latest_seq=$($sr.latest_sample.seq)" -ForegroundColor DarkGray
@@ -72,9 +72,9 @@ try {
   if (-not $measuring) { throw "State did not become Measuring after start attempts" }
 
   # Stop and verify not Measuring
-  $stopResp = Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop | Select-Object -ExpandProperty Content
+  $stopResp = Invoke-WebRequest -UseBasicParsing -Method POST http://127.0.0.1:8080/stop | Select-Object -ExpandProperty Content
   if ($stopResp -notmatch '"ok":true') { throw "Stop failed: $stopResp" }
-  $sr2 = (Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content) | ConvertFrom-Json
+  $sr2 = (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8080/status | Select-Object -ExpandProperty Content) | ConvertFrom-Json
   if ($sr2.state -eq 'Measuring') { throw "State still Measuring after stop" }
 
   Write-Host "HTTP integration test passed"
