@@ -6,9 +6,11 @@
 class QLabel;
 class QPushButton;
 class QTimer;
+class RestClient;
 
 namespace telemetryhub::gateway { class GatewayCore; }
 
+// UI skeleton for TelemetryHub GUI
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -27,6 +29,7 @@ private:
     QPushButton* startButton_ = nullptr;
     QPushButton* stopButton_ = nullptr;
     QTimer* refreshTimer_ = nullptr;
+    RestClient* client_ = nullptr;
 
     // Later: either call REST or a thin client interface
 };
