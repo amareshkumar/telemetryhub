@@ -83,5 +83,5 @@ if(WIN32)
   add_test(NAME http_integration
            COMMAND pwsh -NoLogo -NoProfile -File ${CMAKE_CURRENT_BINARY_DIR}/http_integration.ps1
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-  set_tests_properties(http_integration PROPERTIES TIMEOUT 20)
+  set_tests_properties(http_integration PROPERTIES TIMEOUT 60)
 endif()

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(TelemetryHub 
-    VERSION 0.9.0
+    VERSION 1.1.0
     LANGUAGES CXX
 )
 
@@ -70,10 +70,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 ## can accidentally pick up MSYS include paths from the environment.
 set(CMAKE_MSVC_INCLUDE_EXTERNAL_HEADERS OFF)
 
+# Ensure MSVC reports a correct __cplusplus for Qt checks
+if (MSVC)
+  add_compile_options(/Zc:__cplusplus)
+endif()
+
 # Optionally: warnings, sanitizers, etc. in cmake/ConfigWarnings.cmake
 # include(cmake/ConfigWarnings.cmake)
 
-# option(BUILD_GUI "Build Qt GUI" ON)
+option(BUILD_GUI "Build Qt GUI" ON)
 option(BUILD_TESTING "Build tests" ON)
 
 add_subdirectory(device)
@@ -110,7 +115,7 @@ target_compile_definitions(gateway_app PRIVATE
 )
 
 if (BUILD_GUI)
-    # add_subdirectory(gui)
+  add_subdirectory(gui)
 endif()
 
 if (BUILD_TESTING)
