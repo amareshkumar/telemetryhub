@@ -90,6 +90,8 @@ jobs:
           host: ${{ env.QT_HOST }}
           target: desktop
           arch: ${{ env.QT_ARCH }}
+          modules: qtbase
+          aqtversion: "==3.2.*"
           cache: true
 
       - name: "Guardrail: Verify Qt version is 6.10.1"
