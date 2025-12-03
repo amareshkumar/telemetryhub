@@ -5,9 +5,17 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <stdexcept>
 
 RestClient::RestClient(const QUrl& baseUrl, QObject* parent)
-    : QObject(parent), base_(baseUrl), nam_(new QNetworkAccessManager(this)) {}
+    : QObject(parent), base_(baseUrl), nam_(new QNetworkAccessManager(this)) {
+    if (base_.isEmpty() || !base_.isValid()) {
+        throw std::invalid_argument("RestClient: baseUrl must be a valid, non-empty URL");
+    }
+    if (base_.scheme().isEmpty() || (base_.scheme() != QStringLiteral("http") && base_.scheme() != QStringLiteral("https"))) {
+        throw std::invalid_argument("RestClient: baseUrl must use http or https scheme");
+    }
+}
 
 void RestClient::getStatus(std::function<void(const QJsonObject&, const QString&)> onDone) {
     QUrl url = base_.resolved(QUrl("/status"));
