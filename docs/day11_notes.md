@@ -67,13 +67,13 @@ If later we need push updates, we can add server-sent events or WebSockets in a 
 
 ## How to Run Locally
 
-- Build GUI using a preset (VS 2026) or the VS 2022 Qt kit in CI.
+- Build GUI using a preset (VS 2022) or the VS 2022 Qt kit in CI.
 - Use `tools/run_gui.ps1` to set Qt PATH, start `gateway_app` if needed, and launch the GUI.
 
 ```powershell
 $env:THUB_QT_ROOT = "C:\\Qt\\6.10.1\\msvc2022_64"
-cmake --preset vs2026-gui
-cmake --build --preset vs2026-gui
+cmake --preset vs2022-gui
+cmake --build --preset vs2022-gui
 pwsh -File tools/run_gui.ps1 -ApiBase "http://127.0.0.1:8080"
 ```
 
