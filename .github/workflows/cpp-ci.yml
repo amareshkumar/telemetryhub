@@ -73,7 +73,7 @@ jobs:
     name: Windows GUI (Qt build)
     runs-on: windows-latest
     env:
-      QT_VERSION: 6.10.1
+      QT_VERSION: 6.10.*
       QT_HOST: windows
       QT_ARCH: msvc2022_64
     steps:
@@ -82,28 +82,6 @@ jobs:
 
       - name: Install Ninja
         run: choco install ninja -y
-
-      - name: Probe Qt availability and fallback
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          Write-Host "Probing Qt availability for version $env:QT_VERSION arch $env:QT_ARCH"
-          python -m pip install aqtinstall==3.3.* | Out-Host
-          try {
-            # Correct aqt syntax: aqt list-qt windows desktop --arch <arch> <version>
-            $out = python -m aqt list-qt windows desktop --arch $env:QT_ARCH $env:QT_VERSION | Out-String
-            if ($out -match 'ERROR' -or $out -eq '') {
-              Write-Warning "aqt list-qt returned error output: $out"
-              Write-Warning "Falling back to 6.10.0"
-              "QT_VERSION=6.10.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding ascii
-            } elseif ($out -notmatch [regex]::Escape($env:QT_ARCH)) {
-              Write-Warning "Arch '$env:QT_ARCH' not found for Qt $env:QT_VERSION; falling back to 6.10.0"
-              "QT_VERSION=6.10.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding ascii
-            }
-          } catch {
-            Write-Warning "aqt list-qt failed; falling back to 6.10.0"
-            "QT_VERSION=6.10.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding ascii
-          }
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
