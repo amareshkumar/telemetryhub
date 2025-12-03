@@ -12,7 +12,8 @@ RestClient::RestClient(const QUrl& baseUrl, QObject* parent)
     if (base_.isEmpty() || !base_.isValid()) {
         throw std::invalid_argument("RestClient: baseUrl must be a valid, non-empty URL");
     }
-    if (base_.scheme().isEmpty() || (base_.scheme() != QStringLiteral("http") && base_.scheme() != QStringLiteral("https"))) {
+    const QString scheme = base_.scheme();
+    if (scheme != QStringLiteral("http") && scheme != QStringLiteral("https")) {
         throw std::invalid_argument("RestClient: baseUrl must use http or https scheme");
     }
 }
