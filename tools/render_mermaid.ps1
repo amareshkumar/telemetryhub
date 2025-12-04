@@ -11,7 +11,7 @@
   Root directory containing .mmd files. Default: docs/mermaid relative to repo root.
 
 .PARAMETER Pattern
-  File glob to select diagrams. Default: *_day10.mmd (current iteration set).
+  File glob to select diagrams. Default: *_day12.mmd (current iteration set).
 
 .PARAMETER OutputFormat
   mermaid-cli output format (png|svg|pdf). Default: png.
@@ -25,12 +25,12 @@
 .PARAMETER SkipInstall
   If set, do not attempt Node install; fail fast if npx missing.
 
-.PARAMETER Verbose
+.PARAMETER Chatty
   Emit extra progress messages.
 
 .EXAMPLE
   pwsh -File tools/render_mermaid.ps1
-  Renders all *_day10.mmd files under docs/mermaid to PNG.
+  Renders all *_day12.mmd files under docs/mermaid to PNG.
 
 .EXAMPLE
   pwsh -File tools/render_mermaid.ps1 -Pattern '*.mmd' -OutputFormat svg -OutDir rendered
@@ -44,19 +44,19 @@
 [CmdletBinding()]
 param(
   [string]$SourceDir = "docs/mermaid",
-  [string]$Pattern = "*_day10.mmd",
+  [string]$Pattern = "*_day12.mmd",
   [ValidateSet('png','svg','pdf')][string]$OutputFormat = 'png',
   [string]$OutDir,
   [switch]$ForceInstallNode,
   [switch]$SkipInstall,
-  [switch]$Verbose
+  [switch]$Chatty
 )
 
-function Write-Info($msg) { if ($Verbose) { Write-Host "[mermaid] $msg" } }
+function Write-Info($msg) { if ($Chatty) { Write-Host "[mermaid] $msg" } }
 function Fail($msg) { Write-Error $msg; exit 1 }
 
-# Resolve source directory relative to repo root
-$repoRoot = (Get-Item -Path $PSScriptRoot).Parent.Parent.FullName
+# Resolve source directory relative to repo root (tools/ -> repo root)
+$repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
 $absSource = Join-Path $repoRoot $SourceDir
 if (-not (Test-Path $absSource)) { Fail "SourceDir '$absSource' not found." }
 

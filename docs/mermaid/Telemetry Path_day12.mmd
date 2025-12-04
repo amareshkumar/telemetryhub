@@ -1,0 +1,23 @@
+sequenceDiagram
+    %% Telemetry path including Qt GUI polling
+    participant Dev as Device
+    participant Core as GatewayCore
+    participant Q as TelemetryQueue
+    participant API as REST (cpp-httplib)
+    participant GUI as Qt GUI
+    participant NAM as QNetworkAccessManager
+
+    Dev->>Core: read_sample()
+    Core->>Q: push(sample)
+    Q-->>Core: pop(sample)
+    Core->>Core: update latest_sample
+
+    loop Every 1s (QTimer)
+        GUI->>NAM: GET /status
+        NAM->>API: HTTP GET /status
+        API->>Core: query state + latest_sample
+        Core-->>API: state + sample
+        API-->>NAM: 200 OK + JSON
+        NAM-->>GUI: deliver JSON
+        GUI->>GUI: update labels (state/latest)
+    end
