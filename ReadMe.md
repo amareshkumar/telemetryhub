@@ -23,6 +23,18 @@ Focus areas: RAII, pImpl, state machines, producer–consumer queues, thread coo
 
 Tip: Open these `.mmd` files directly in VS Code with a Mermaid extension to preview, or render to images using your existing scripts in `docs/mermaid`.
 
+Render locally (not in CI)
+```powershell
+# Render Day 12 diagrams to PNG in-place
+pwsh -File tools\render_mermaid.ps1 -Pattern "*_day12.mmd" -OutputFormat png -Verbose
+
+# Optionally render all .mmd to a separate folder
+pwsh -File tools\render_mermaid.ps1 -Pattern "*.mmd" -OutputFormat png -OutDir docs\mermaid\rendered -Verbose
+```
+Notes:
+- This script uses `npx @mermaid-js/mermaid-cli` and may install Node.js LTS via `winget` if missing.
+- Keep these renders local; CI does not run this step.
+
 ## add log and e2e test
 ./build/gateway/gateway_app --log-level debug
 ./build/gateway/gateway_app --log-level trace --log-file thub.log
