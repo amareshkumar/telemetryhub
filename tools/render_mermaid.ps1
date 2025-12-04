@@ -11,7 +11,7 @@
   Root directory containing .mmd files. Default: docs/mermaid relative to repo root.
 
 .PARAMETER Pattern
-  File glob to select diagrams. Default: *_day10.mmd (current iteration set).
+  File glob to select diagrams. Default: *_day12.mmd (current iteration set).
 
 .PARAMETER OutputFormat
   mermaid-cli output format (png|svg|pdf). Default: png.
@@ -30,7 +30,7 @@
 
 .EXAMPLE
   pwsh -File tools/render_mermaid.ps1
-  Renders all *_day10.mmd files under docs/mermaid to PNG.
+  Renders all *_day12.mmd files under docs/mermaid to PNG.
 
 .EXAMPLE
   pwsh -File tools/render_mermaid.ps1 -Pattern '*.mmd' -OutputFormat svg -OutDir rendered
@@ -44,7 +44,7 @@
 [CmdletBinding()]
 param(
   [string]$SourceDir = "docs/mermaid",
-  [string]$Pattern = "*_day10.mmd",
+  [string]$Pattern = "*_day12.mmd",
   [ValidateSet('png','svg','pdf')][string]$OutputFormat = 'png',
   [string]$OutDir,
   [switch]$ForceInstallNode,
