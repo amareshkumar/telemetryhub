@@ -16,6 +16,13 @@ It simulates a pipeline with:
 
 Focus areas: RAII, pImpl, state machines, producer–consumer queues, thread coordination, safe shutdown.
 
+## Diagrams
+- High-Level Architecture: `docs/mermaid/High level diagram_day12.mmd`
+- Control Flow: `docs/mermaid/Control flow_day12.mmd`
+- Telemetry Path: `docs/mermaid/Telemetry Path_day12.mmd`
+
+Tip: Open these `.mmd` files directly in VS Code with a Mermaid extension to preview, or render to images using your existing scripts in `docs/mermaid`.
+
 ## add log and e2e test
 ./build/gateway/gateway_app --log-level debug
 ./build/gateway/gateway_app --log-level trace --log-file thub.log
