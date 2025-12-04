@@ -233,3 +233,26 @@ ctest -C Release -R http_integration --output-on-failure
 See the [CHANGELOG](CHANGELOG.md) for full version history.
 
 Latest release: **v1.1.0**
+
+
+📜 Rights & Usage Notice
+
+This repository is publicly visible for portfolio and evaluation purposes.
+All rights to the source code and associated materials are reserved.
+
+You may:
+
+View and read the code for personal or evaluation purposes.
+
+You may not, without explicit written permission:
+
+Copy, reuse, modify, or redistribute any portion of the code
+
+Use the code in commercial, academic, or production projects
+
+Create derivative works based on this project
+
+Publish or mirror the code elsewhere
+
+Unauthorized use of this code is strictly prohibited.
+For permissions or inquiries, please contact: amaresh.kumar@live.in
