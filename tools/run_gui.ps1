@@ -8,17 +8,20 @@
   - Waits until /status responds, then launches the GUI.
 
 .PARAMETER QtRoot
-  Path to Qt MSVC kit root (e.g., C:\Qt\6.10.1\msvc2022_64). Defaults to $env:THUB_QT_ROOT.
-  If not provided, attempts simple auto-detection under C:\Qt.
+  Path to Qt MSVC kit root (e.g., C:\Qt\6.10.1\msvc2022_64 or msvc2026_64).
+  Defaults to $env:Qt6_DIR (VS2022) then $env:THUB_QT_ROOT (VS2026). If not provided,
+  attempts simple auto-detection under C:\Qt.
 
 .PARAMETER ApiBase
   Base URL for the REST API. Default: http://127.0.0.1:8080
 
 .PARAMETER GatewayExe
-  Path to gateway executable. Default: build_vs26\\gateway\\Release\\gateway_app.exe
+  Path to gateway executable. Default: build_vs26\\gateway\\Release\\gateway_app.exe (VS2026).
+  If missing, falls back to build_vs_gui\\gateway\\Release\\gateway_app.exe (VS2022).
 
 .PARAMETER GuiExe
-  Path to GUI executable. Default: build_vs26\\gui\\Release\\gui_app.exe
+  Path to GUI executable. Default: build_vs26\\gui\\Release\\gui_app.exe (VS2026).
+  If missing, falls back to build_vs_gui\\gui\\Release\\gui_app.exe (VS2022).
 
 .PARAMETER WaitTimeoutSec
   Seconds to wait for /status to become ready. Default: 20
@@ -29,7 +32,7 @@
 
 [CmdletBinding()]
 param(
-  [string]$QtRoot = $env:THUB_QT_ROOT,
+  [string]$QtRoot = $(if ($env:Qt6_DIR) { $env:Qt6_DIR } else { $env:THUB_QT_ROOT }),
   [string]$ApiBase = 'http://127.0.0.1:8080',
   [string]$GatewayExe = 'build_vs26\gateway\Release\gateway_app.exe',
   [string]$GuiExe = 'build_vs26\gui\Release\gui_app.exe',
@@ -81,6 +84,13 @@ if (-not (Test-Path $gatewayFull)) {
   }
 }
 $guiFull = Join-Path $repoRoot $GuiExe
+if (-not (Test-Path $guiFull)) {
+  $guiFallback = Join-Path $repoRoot 'build_vs_gui\gui\Release\gui_app.exe'
+  if (Test-Path $guiFallback) {
+    $GuiExe = 'build_vs_gui\gui\Release\gui_app.exe'
+    $guiFull = $guiFallback
+  }
+}
 if (-not (Test-Path $guiFull)) { Fail "GUI exe not found at $guiFull" }
 if (-not (Test-Path $gatewayFull)) { Write-Info "Gateway exe not found at $gatewayFull (will only attempt to connect)." }
 
