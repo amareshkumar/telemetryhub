@@ -76,3 +76,74 @@ CTest note: `http_integration` is registered only on Windows. On Linux, validate
 - MSYS headers on Windows: if you see paths like `C:\msys64\...`, see `docs/windows_build_troubleshooting.md`.
 - Missing `cpp-httplib`: delete the build directory (or `CMakeCache.txt`) and re-configure so FetchContent repopulates.
 - Optional features: project hard-disables OpenSSL/zlib/brotli/zstd in `cpp-httplib`; HTTPS/compression aren’t enabled.
+
+## Qt GUI Verification (Windows)
+
+Verify the Qt Widgets GUI (`gui_app`) against the running `gateway_app` on both VS 2022 and VS 2026 setups, via command line and Qt Creator.
+
+Prerequisites
+- Qt 6.10.1 installed locally.
+- For VS 2022 preset, set `Qt6_DIR` to your Qt prefix (e.g., `C:\Qt\6.10.1\msvc2022_64`).
+- For VS 2026 preset, set `THUB_QT_ROOT` to your Qt prefix (e.g., `C:\Qt\6.10.1\msvc2026_64`).
+
+### VS 2022 (Command Line)
+```powershell
+# Open Developer PowerShell for VS 2022
+$env:Qt6_DIR = 'C:\Qt\6.10.1\msvc2022_64'
+
+# Configure & build (GUI + gateway)
+cmake --preset vs2022-gui
+cmake --build --preset vs2022-gui -v
+
+# Terminal A: run the gateway server
+& .\build_vs_gui\gateway\Release\gateway_app.exe
+```
+In a second terminal:
+```powershell
+# Terminal B: launch the GUI (talks to http://localhost:8080)
+& .\build_vs_gui\gui\Release\gui_app.exe
+```
+Quick launch with `run_gui.ps1` (recommended):
+```powershell
+# One command: sets Qt runtime, waits for gateway health, bundles Qt DLLs
+$env:Qt6_DIR = 'C:\Qt\6.10.1\msvc2022_64'
+pwsh -File tools\run_gui.ps1 -ApiBase http://127.0.0.1:8080 -DeployLocal
+```
+Expected: GUI starts, Status shows current state. Click Start, then Stop; Status updates accordingly. If it can’t connect, confirm the gateway is running on port 8080.
+
+### VS 2026 (Command Line)
+```powershell
+# Open Developer PowerShell for VS 2026
+$env:THUB_QT_ROOT = 'C:\Qt\6.10.1\msvc2026_64'
+
+# Configure & build (GUI + gateway)
+cmake --preset vs2026-gui
+cmake --build --preset vs2026-gui -v
+
+# Terminal A: run the gateway server
+& .\build_vs26\gateway\Release\gateway_app.exe
+```
+In a second terminal:
+```powershell
+# Terminal B: launch the GUI
+& .\build_vs26\gui\Release\gui_app.exe
+```
+
+Notes
+- You can also bundle dependencies with `windeployqt` for a self-contained folder if launching outside the build tree.
+- The repo includes `tools/run_gui.ps1` as a helper; run it from a Developer PowerShell if you prefer a scripted launch.
+
+### Qt Creator (MSVC 2022 Kit)
+1) Open Qt Creator → File → Open File or Project → select the repository `CMakeLists.txt`.
+2) When prompted for a kit, select “Desktop Qt 6.10.1 MSVC 2022 64-bit”. Ensure the Qt version points at `C:\Qt\6.10.1\msvc2022_64`.
+3) Configure the project. Qt Creator will generate build files (you can map to the `vs2022-gui` Release configuration if desired).
+4) Build the `gui_app` target.
+5) Run `gateway_app` first (from the Projects pane or an external terminal), then run `gui_app`.
+
+### Qt Creator (MSVC 2026 Kit)
+1) Ensure a kit exists for MSVC 2026 with Qt 6.10.1 (Qt Creator → Preferences/Options → Kits). Point the Qt version to `C:\Qt\6.10.1\msvc2026_64`.
+2) Open the project `CMakeLists.txt` and select this kit.
+3) Configure and build the `gui_app` target (Release is recommended).
+4) Run `gateway_app`, then run `gui_app` from Qt Creator.
+
+If your Qt Creator version doesn’t provide a 2026 kit, use the 2022 kit or the command-line presets above.
