@@ -25,7 +25,7 @@
 .PARAMETER SkipInstall
   If set, do not attempt Node install; fail fast if npx missing.
 
-.PARAMETER Verbose
+.PARAMETER Chatty
   Emit extra progress messages.
 
 .EXAMPLE
@@ -49,14 +49,14 @@ param(
   [string]$OutDir,
   [switch]$ForceInstallNode,
   [switch]$SkipInstall,
-  [switch]$Verbose
+  [switch]$Chatty
 )
 
-function Write-Info($msg) { if ($Verbose) { Write-Host "[mermaid] $msg" } }
+function Write-Info($msg) { if ($Chatty) { Write-Host "[mermaid] $msg" } }
 function Fail($msg) { Write-Error $msg; exit 1 }
 
-# Resolve source directory relative to repo root
-$repoRoot = (Get-Item -Path $PSScriptRoot).Parent.Parent.FullName
+# Resolve source directory relative to repo root (tools/ -> repo root)
+$repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
 $absSource = Join-Path $repoRoot $SourceDir
 if (-not (Test-Path $absSource)) { Fail "SourceDir '$absSource' not found." }
 
