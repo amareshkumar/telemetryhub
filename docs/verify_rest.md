@@ -147,3 +147,36 @@ Notes
 4) Run `gateway_app`, then run `gui_app` from Qt Creator.
 
 If your Qt Creator version doesn’t provide a 2026 kit, use the 2022 kit or the command-line presets above.
+
+### Qt Creator (No Visual Studio)
+You can build and run the project entirely inside Qt Creator without relying on Visual Studio 2022/2026 generators. Use a Ninja-based kit (MSVC Build Tools or MinGW) and CMake.
+
+Prerequisites
+- Qt 6.10.1 installed (e.g., `C:\Qt\6.10.1\`)
+- One of the following compilers configured in Qt Creator Kits:
+  - MSVC Build Tools (x64) with Ninja
+  - MinGW (x64) with Ninja
+- CMake 3.23+ and Ninja available in PATH (Qt Creator usually bundles these)
+
+Steps
+1) Open Qt Creator → File → Open File or Project → select the repo `CMakeLists.txt`.
+2) When prompted for a Kit, choose a Qt 6.10.1 kit that uses Ninja (e.g., “Desktop Qt 6.10.1 MinGW 64-bit” or “Desktop Qt 6.10.1 MSVC Build Tools 64-bit”).
+3) In the Configure Project page:
+	- Ensure “Build directory” is inside the repo (e.g., `build_qtcreator`).
+	- Set CMake options:
+	  - `-DBUILD_TESTING=ON`
+	  - `-DBUILD_GUI=ON`
+	  - If needed, add `-DCMAKE_PREFIX_PATH=<QtKitRoot>` (e.g., `C:\Qt\6.10.1\mingw_64` or `C:\Qt\6.10.1\msvc2022_64`).
+4) Click “Configure Project”. Qt Creator will run CMake and generate Ninja files.
+5) In the left pane (Projects/Targets), mark `gui_app` and `gateway_app` as build targets.
+6) Build the project (hammer icon). Artifacts appear under the chosen build directory, e.g., `build_qtcreator\gui\<config>\gui_app.exe` and `build_qtcreator\gateway\<config>\gateway_app.exe`.
+7) Run sequence:
+	- First, run `gateway_app` (from the Run button or open a terminal and run it from the build folder).
+	- Then, run `gui_app`. Set the environment variable `THUB_API_BASE` to `http://127.0.0.1:8080` in the Run configuration if you changed ports.
+8) If `gui_app` cannot find Qt DLLs, either:
+	- Add the kit’s `bin` folder to PATH in the Run configuration, or
+	- Use `tools\run_gui.ps1 -DeployLocal` once to bundle Qt next to the exe, then run directly.
+
+Notes
+- MinGW vs MSVC: The project targets C++20 and doesn’t require MSVC-specific features in the GUI; either MinGW or MSVC Build Tools works. Keep `BUILD_GUI=ON` in CMake.
+- Tests: You can add a Test configuration to run `ctest -V` from Qt Creator’s “Add Build Step → Custom Process Step”, or run tests in a terminal: `ctest --test-dir <build_qtcreator> --output-on-failure`.
