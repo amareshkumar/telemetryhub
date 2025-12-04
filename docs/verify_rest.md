@@ -180,3 +180,7 @@ Steps
 Notes
 - MinGW vs MSVC: The project targets C++20 and doesn’t require MSVC-specific features in the GUI; either MinGW or MSVC Build Tools works. Keep `BUILD_GUI=ON` in CMake.
 - Tests: You can add a Test configuration to run `ctest -V` from Qt Creator’s “Add Build Step → Custom Process Step”, or run tests in a terminal: `ctest --test-dir <build_qtcreator> --output-on-failure`.
+
+See also
+- `docs/verify_qt_gui.md` for a dedicated GUI verification guide.
+- The Ninja preset `qtcreator-ninja` provides consistent CLI and Qt Creator behavior.
