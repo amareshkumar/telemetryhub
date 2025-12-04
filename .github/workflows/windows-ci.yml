@@ -3,7 +3,7 @@ name: Windows C++ CI
 on:
   pull_request:
   push:
-    branches: [ main, day9_original_plan ]
+    branches: [ main, master ]
 
 jobs:
   build-and-test-windows:
