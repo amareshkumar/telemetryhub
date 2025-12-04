@@ -164,7 +164,7 @@ It only calls the API, which makes it easy to change internals without breaking 
 
 ## Data Flow – Telemetry Path
 
-This is captured in `telemetry_path.mmd` as a Mermaid sequence diagram.
+See `docs/mermaid/Telemetry Path_day12.mmd` (Mermaid sequence diagram) for the current Day 12 view including the Qt GUI’s 1s polling via QNetworkAccessManager.
 
 Logical path:
 
@@ -178,7 +178,9 @@ Logical path:
 
 ## Control Flow – Lifecycle
 
-This is captured in `control_flow.mmd`.
+See `docs/mermaid/Control flow_day12.mmd` for the updated start/stop flow and periodic status polling.
+
+For a high-level component view, also see `docs/mermaid/High level diagram_day12.mmd`.
 
 High-level control flow:
 
