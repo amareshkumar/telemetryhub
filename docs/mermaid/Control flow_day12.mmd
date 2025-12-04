@@ -1,5 +1,6 @@
 sequenceDiagram
-    participant Client as HTTP Client (Invoke-WebRequest/curl)
+    participant GUI as Qt GUI
+    participant Script as HTTP Client (curl/Invoke-WebRequest)
     participant App as gateway_app (REST server)
     participant Core as GatewayCore
     participant Q as TelemetryQueue
@@ -13,12 +14,11 @@ sequenceDiagram
     Core->>Dev: start()
     Core->>Q: push samples
 
-    loop monitoring
     loop Every 1s (GUI polling)
         GUI->>App: GET /status
         App->>Core: device_state(), latest_sample()
         Core-->>App: state + sample
-        App-->>Client: JSON { state, latest_sample }
+        App-->>GUI: JSON { state, latest_sample }
     end
 
     Script->>App: POST /stop
