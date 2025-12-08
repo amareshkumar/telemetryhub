@@ -14,6 +14,19 @@ void TelemetryQueue::push(const device::TelemetrySample& sample)
     cv_.notify_one();
 }
 
+void TelemetryQueue::push(device::TelemetrySample&& sample)
+{
+    {
+        std::lock_guard lock(mutex_);
+        if (shutdown_) {
+            return; // Do not accept new samples after shutdown
+        }
+        // Avoid copy by constructing in-place
+        queue_.emplace(std::move(sample));
+    }
+    cv_.notify_one();
+}
+
 std::optional<device::TelemetrySample> TelemetryQueue::pop()
 {
     std::unique_lock lock(mutex_);
