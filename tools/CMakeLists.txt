@@ -22,10 +22,10 @@ target_link_libraries(device_state_test
     PRIVATE device
 )
 
-add_executable(queue_smoke
-    queue_smoke.cpp
+add_executable(perf_tool
+    perf_tool.cpp
 )
 
-target_link_libraries(queue_smoke
+target_link_libraries(perf_tool
     PRIVATE gateway_core
 )

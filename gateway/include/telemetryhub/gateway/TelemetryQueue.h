@@ -12,6 +12,8 @@ class TelemetryQueue
 {
 public:
     void push(const device::TelemetrySample& sample);
+    // Optimized path to avoid extra copy when the caller can move
+    void push(device::TelemetrySample&& sample);
     std::optional<device::TelemetrySample> pop();
 
     // Signal that no more items will be produced; unblocks waiting consumers.
