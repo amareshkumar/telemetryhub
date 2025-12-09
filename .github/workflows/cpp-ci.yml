@@ -83,9 +83,14 @@ jobs:
         run: choco install ninja -y
 
       - name: Install Qt
-        uses: actions/setup-python@v5
+        uses: jurplel/install-qt-action@v4
         with:
-          python-version: '3.11'
+          version: '6.5.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          dir: ${{ github.workspace }}
+          cache: 'true'
 
       - name: Install aqtinstall
         run: pip install aqtinstall
