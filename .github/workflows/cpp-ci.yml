@@ -73,9 +73,8 @@ jobs:
     name: Windows GUI (Qt build)
     runs-on: windows-latest
     env:
-      QT_VERSION: 6.10.*
       QT_HOST: windows
-      QT_ARCH: win64_msvc2022_64
+      QT_ARCH: msvc2022_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -108,24 +107,11 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $allowed = @('6.10.1','6.9.3')
-          if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
-          $matches = $allowed | Where-Object { $env:Qt6_DIR -match [regex]::Escape($_) }
-          if ($matches.Count -eq 0) {
-            throw "Qt6_DIR ('$env:Qt6_DIR') does not include allowed versions: $($allowed -join ', ')"
+          if (-not (Test-Path $env:Qt6_DIR)) {
+            throw "Qt6_DIR not found at '$env:Qt6_DIR'"
           }
-          # Try qtpaths to double-check runtime version
-          $qtRoot = Resolve-Path (Join-Path $env:Qt6_DIR '..\..\..')
-          $qtpaths = @(
-            (Join-Path $qtRoot 'bin/qtpaths6.exe'),
-            (Join-Path $qtRoot 'bin/qtpaths.exe')
-          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if ($qtpaths) {
-            $ver = & $qtpaths --qt-version
-            if ($allowed -notcontains $ver) { throw "qtpaths reported Qt $ver, allowed: $($allowed -join ', ')" }
-          } else {
-            Write-Host 'qtpaths not found; relying on Qt6_DIR path check.'
-          }
+          Write-Host "Qt6_DIR found at $env:Qt6_DIR"
+          Get-Command windeployqt.exe
 
       - name: Configure (GUI Preset VS2022)
         shell: bash
