@@ -95,6 +95,7 @@ jobs:
           cache: true
 
       - name: Fallback Install Qt 6.9.3
+        id: install-qt-fallback
         if: steps.install-qt.outcome == 'failure'
         uses: jurplel/install-qt-action@v4
         with:
