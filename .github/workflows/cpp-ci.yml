@@ -38,6 +38,7 @@ jobs:
         run: |
           if [ -f build_asan/gateway/gateway_app ]; then build_asan/gateway/gateway_app --version; fi
           if [ -f build_asan/gateway_app ]; then build_asan/gateway_app --version; fi
+
   windows:
     if: ${{ github.event_name != 'pull_request' }}
     name: Windows (MSVC via Presets)
@@ -68,6 +69,7 @@ jobs:
         run: |
           if [ -f build_vs_ci/gateway/Release/gateway_app.exe ]; then build_vs_ci/gateway/Release/gateway_app.exe --version; fi
           if [ -f build_vs_ci/gateway_app.exe ]; then build_vs_ci/gateway_app.exe --version; fi
+
   windows-gui:
     if: ${{ github.event_name != 'pull_request' }}
     name: Windows GUI (Qt build)
@@ -83,6 +85,7 @@ jobs:
         run: choco install ninja -y
 
       - name: Install Qt
+        id: install-qt
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.5.3'
@@ -124,43 +127,51 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $exeCandidates = @(
-            "${{ github.workspace }}\\build_vs_gui\\gui\\Release\\gui_app.exe",
-            "${{ github.workspace }}\\build_vs_gui\\Release\\gui_app.exe"
+            "${{ github.workspace }}\build_vs_gui\gui\Release\gui_app.exe",
+            "${{ github.workspace }}\build_vs_gui\Release\gui_app.exe"
           )
           $app = $exeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
           if (-not $app) { throw "gui_app.exe not found in expected locations" }
           Write-Host "Found GUI: $app"
+
           $qtBin = (Get-Command windeployqt6.exe -ErrorAction SilentlyContinue)?.Source
           if (-not $qtBin) { $qtBin = (Get-Command windeployqt.exe -ErrorAction SilentlyContinue)?.Source }
           if (-not $qtBin) { throw "windeployqt not found in PATH" }
+
           & $qtBin --release --compiler-runtime --verbose=1 "$app"
+
           # Create bundle dir and copy exe
-          $bundle = "${{ github.workspace }}\\bundle_gui"
+          $bundle = "${{ github.workspace }}\bundle_gui"
           New-Item -ItemType Directory -Force -Path $bundle | Out-Null
           Copy-Item -Force "$app" $bundle
+
           # Also copy deployed files (same folder as exe)
           $appDir = Split-Path -Parent "$app"
-          Copy-Item -Recurse -Force "$appDir\\*.dll" $bundle -ErrorAction SilentlyContinue
-          if (Test-Path "$appDir\\platforms") { Copy-Item -Recurse -Force "$appDir\\platforms" $bundle }
-          if (Test-Path "$appDir\\styles") { Copy-Item -Recurse -Force "$appDir\\styles" $bundle }
-          if (Test-Path "$appDir\\opengl32sw.dll") { Copy-Item -Force "$appDir\\opengl32sw.dll" $bundle }
+          Copy-Item -Recurse -Force "$appDir\*.dll" $bundle -ErrorAction SilentlyContinue
+          if (Test-Path "$appDir\platforms") { Copy-Item -Recurse -Force "$appDir\platforms" $bundle }
+          if (Test-Path "$appDir\styles") { Copy-Item -Recurse -Force "$appDir\styles" $bundle }
+          if (Test-Path "$appDir\opengl32sw.dll") { Copy-Item -Force "$appDir\opengl32sw.dll" $bundle }
 
       - name: Upload GUI bundle artifact
         uses: actions/upload-artifact@v4
         with:
           name: gui_app_windows_bundle
           path: bundle_gui
+
   linux-tsan:
     name: Linux (TSan via Presets)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
+
       - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build
+
       - name: Clean previous build dirs
         run: |
           rm -rf build build_asan build_tsan
+
       - run: cmake --preset linux-ninja-tsan
       - run: cmake --build --preset linux-ninja-tsan -v
       - run: ctest --preset linux-ninja-tsan --output-on-failure
-
