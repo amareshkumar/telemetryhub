@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
 ## [Released]
+## [2.0.0] - 2025-12-09
+**Title:** REST, Security, Qt GUI, Profiling
+
+### Added
+- Performance benchmark tool (`tools/perf_tool.cpp`) to measure `TelemetryQueue` push operations.
+- System overview document (`docs/system_overview.md`) with architecture diagram and technical explanations.
+- CI troubleshooting guide (`docs/troubleshooting.txt`) documenting the Qt installation fix.
+- Build verification steps (`docs/steps_to_verify.md`).
+
+### Changed
+- Optimized `TelemetryQueue::push` by adding a `std::move` overload to improve performance for rvalue samples.
+- Replaced the unreliable `jurplel/install-qt-action` with a manual `aqtinstall` script in the `windows-gui` CI job for improved stability.
+
+### Fixed
+- Resolved persistent `windows-gui` CI failures related to Qt installation.
+
 ## [1.1.0] - 2025-12-02
 **Title:** Qt6 GUI Application
 
