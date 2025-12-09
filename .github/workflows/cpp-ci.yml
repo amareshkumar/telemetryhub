@@ -75,7 +75,7 @@ jobs:
     env:
       QT_VERSION: 6.10.*
       QT_HOST: windows
-      QT_ARCH: msvc2022_64
+      QT_ARCH: win64_msvc2022_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
