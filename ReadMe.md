@@ -1,3 +1,4 @@
+[![C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml/badge.svg?branch=main)](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml)
 [![Windows C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/windows-ci.yml/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions/workflows/windows-ci.yml)
 
 # TelemetryHub
