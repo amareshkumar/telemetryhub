@@ -2,9 +2,9 @@ name: C++ CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [ main, master ]
   pull_request:
-    branches: [main, master]
+    branches: [ main, master ]
 
 jobs:
   linux:
@@ -74,9 +74,6 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     name: Windows GUI (Qt build)
     runs-on: windows-latest
-    env:
-      QT_HOST: windows
-      QT_ARCH: msvc2022_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -84,32 +81,30 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      - name: Install Python for aqtinstall
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install aqtinstall
-        run: pip install "aqtinstall==3.3.*"
-
       - name: Install Qt
-        shell: pwsh
-        run: |
-          aqt install-qt windows desktop 6.5.3 ${{ env.QT_ARCH }} -O ${{ github.workspace }}/qt
-          echo "Qt6_DIR=${{ github.workspace }}/qt/6.5.3/${{ env.QT_ARCH }}/lib/cmake/Qt6" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "${{ github.workspace }}/qt/6.5.3/${{ env.QT_ARCH }}/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        id: install-qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          # Use a stable Qt 6 version that works well with aqt/install-qt-action
+          version: '6.8.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          dir: ${{ github.workspace }}
+          cache: 'true'
 
       - name: Guardrail: Verify Qt was installed
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          Write-Host "Qt6_DIR is $env:Qt6_DIR"
+          "Qt6_DIR=$env:Qt6_DIR"
+          if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
           if (-not (Test-Path $env:Qt6_DIR)) {
-            throw "Qt6_DIR not found at '$env:Qt6_DIR'"
+            throw "Qt6_DIR path '$env:Qt6_DIR' does not exist"
           }
           Write-Host "Qt6_DIR found at $env:Qt6_DIR"
-          # Verify windeployqt is in the path and executable
-          Get-Command windeployqt.exe
+          Get-Command windeployqt6.exe -ErrorAction SilentlyContinue
+          Get-Command windeployqt.exe -ErrorAction SilentlyContinue
 
       - name: Configure (GUI Preset VS2022)
         shell: bash
@@ -159,16 +154,25 @@ jobs:
     name: Linux (TSan via Presets)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (full history for git describe)
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
 
       - name: Clean previous build dirs
         run: |
           rm -rf build build_asan build_tsan
 
-      - run: cmake --preset linux-ninja-tsan
-      - run: cmake --build --preset linux-ninja-tsan -v
-      - run: ctest --preset linux-ninja-tsan --output-on-failure
+      - name: Configure (Preset)
+        run: cmake --preset linux-ninja-tsan
+
+      - name: Build (Preset)
+        run: cmake --build --preset linux-ninja-tsan -v
+
+      - name: Tests (CTest Preset)
+        run: ctest --preset linux-ninja-tsan --output-on-failure
