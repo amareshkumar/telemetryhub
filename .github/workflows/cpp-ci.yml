@@ -73,9 +73,8 @@ jobs:
     name: Windows GUI (Qt build)
     runs-on: windows-latest
     env:
-      QT_VERSION: 6.10.*
       QT_HOST: windows
-      QT_ARCH: win64_msvc2022_64
+      QT_ARCH: msvc2022_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,37 +82,24 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      - name: Install Qt
+      - name: Install Qt 6.5.3
         id: install-qt
         uses: jurplel/install-qt-action@v4
-        continue-on-error: true
         with:
-          version: 6.10.1
+          version: 6.5.3
           host: ${{ env.QT_HOST }}
           target: desktop
           arch: ${{ env.QT_ARCH }}
           cache: true
 
-      - name: Fallback Install Qt 6.9.3
-        id: install-qt-fallback
-        if: steps.install-qt.outcome == 'failure'
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: 6.9.3
-          host: ${{ env.QT_HOST }}
-          target: desktop
-          arch: ${{ env.QT_ARCH }}
-          cache: true
-
-      - name: "Guardrail: Verify Qt version is 6.10.1 or 6.9.3"
+      - name: "Guardrail: Verify Qt version is 6.5.3"
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $allowed = @('6.10.1','6.9.3')
+          $expected = '6.5.3'
           if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
-          $matches = $allowed | Where-Object { $env:Qt6_DIR -match [regex]::Escape($_) }
-          if ($matches.Count -eq 0) {
-            throw "Qt6_DIR ('$env:Qt6_DIR') does not include allowed versions: $($allowed -join ', ')"
+          if ($env:Qt6_DIR -notmatch [regex]::Escape($expected)) {
+            throw "Qt6_DIR ('$env:Qt6_DIR') does not include expected version $expected"
           }
           # Try qtpaths to double-check runtime version
           $qtRoot = Resolve-Path (Join-Path $env:Qt6_DIR '..\..\..')
@@ -123,7 +109,8 @@ jobs:
           ) | Where-Object { Test-Path $_ } | Select-Object -First 1
           if ($qtpaths) {
             $ver = & $qtpaths --qt-version
-            if ($allowed -notcontains $ver) { throw "qtpaths reported Qt $ver, allowed: $($allowed -join ', ')" }
+            if ($ver -ne $expected) { throw "qtpaths reported Qt $ver, expected $expected" }
+            Write-Host "Qt version $ver verified via qtpaths."
           } else {
             Write-Host 'qtpaths not found; relying on Qt6_DIR path check.'
           }
