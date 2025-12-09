@@ -92,7 +92,7 @@ jobs:
 
       - name: Install Qt from aqtinstall
         run: |
-          aqtinstall-windows-desktop 6.5.3 windows desktop win64_msvc2022_64 -O ${{ github.workspace }}/qt
+          aqt install-qt windows desktop 6.5.3 win64_msvc2022_64 -O ${{ github.workspace }}/qt
           echo "Qt6_DIR=${{ github.workspace }}/qt/6.5.3/msvc2022_64/lib/cmake/Qt6" >> $env:GITHUB_ENV
           echo "${{ github.workspace }}/qt/6.5.3/msvc2022_64/bin" >> $env:GITHUB_PATH
 
