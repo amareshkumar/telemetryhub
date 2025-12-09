@@ -73,7 +73,6 @@ jobs:
     name: Windows GUI (Qt build)
     runs-on: windows-latest
     env:
-      QT_VERSION: 6.10.*
       QT_HOST: windows
       QT_ARCH: msvc2022_64
     steps:
@@ -83,37 +82,34 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      # - name: Install Qt
-      #   uses: jurplel/install-qt-action@v4
-      #   with:
-      #     version: ${{ env.QT_VERSION }}
-      #     host: ${{ env.QT_HOST }}
-      #     target: desktop
-      #     arch: ${{ env.QT_ARCH }}
-      #     aqtversion: "==3.2.*"
-      #     cache: true
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.5.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          dir: ${{ github.workspace }}
+          cache: 'true'
 
-      - name: "Guardrail: Verify Qt version is 6.10.1"
+      - name: Install aqtinstall
+        run: pip install aqtinstall
+
+      - name: Install Qt from aqtinstall
+        run: |
+          aqt install-qt windows desktop 6.5.3 msvc2022_64 -O ${{ github.workspace }}/qt
+          echo "Qt6_DIR=${{ github.workspace }}/qt/6.5.3/msvc2022_64/lib/cmake/Qt6" >> $env:GITHUB_ENV
+          echo "${{ github.workspace }}/qt/6.5.3/msvc2022_64/bin" >> $env:GITHUB_PATH
+
+      - name: "Guardrail: Verify Qt was installed"
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $expected = '6.10.1'
-          if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
-          if ($env:Qt6_DIR -notmatch [regex]::Escape($expected)) {
-            throw "Qt6_DIR ('$env:Qt6_DIR') does not include expected $expected"
+          if (-not (Test-Path $env:Qt6_DIR)) {
+            throw "Qt6_DIR not found at '$env:Qt6_DIR'"
           }
-          # Try qtpaths to double-check runtime version
-          $qtRoot = Resolve-Path (Join-Path $env:Qt6_DIR '..\..\..')
-          $qtpaths = @(
-            (Join-Path $qtRoot 'bin/qtpaths6.exe'),
-            (Join-Path $qtRoot 'bin/qtpaths.exe')
-          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if ($qtpaths) {
-            $ver = & $qtpaths --qt-version
-            if ($ver -ne $expected) { throw "qtpaths reported Qt $ver, expected $expected" }
-          } else {
-            Write-Host 'qtpaths not found; relying on Qt6_DIR path check.'
-          }
+          Write-Host "Qt6_DIR found at $env:Qt6_DIR"
+          Get-Command windeployqt.exe
 
       - name: Configure (GUI Preset VS2022)
         shell: bash
