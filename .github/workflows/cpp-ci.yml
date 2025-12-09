@@ -109,7 +109,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $allowed = @('6.10.1','6.9.3')
           if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
-          if ($allowed | ForEach-Object { if ($env:Qt6_DIR -match [regex]::Escape($_)) { $_ } } | Measure-Object).Count -eq 0) {
+          $matches = $allowed | Where-Object { $env:Qt6_DIR -match [regex]::Escape($_) }
+          if ($matches.Count -eq 0) {
             throw "Qt6_DIR ('$env:Qt6_DIR') does not include allowed versions: $($allowed -join ', ')"
           }
           # Try qtpaths to double-check runtime version
