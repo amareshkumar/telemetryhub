@@ -84,6 +84,7 @@ jobs:
         run: choco install ninja -y
 
       - name: Install Qt
+        id: install-qt
         uses: jurplel/install-qt-action@v4
         continue-on-error: true
         with:
@@ -94,7 +95,7 @@ jobs:
           cache: true
 
       - name: Fallback Install Qt 6.9.3
-        if: ${{ env.Qt6_DIR == '' }}
+        if: steps.install-qt.outcome == 'failure'
         uses: jurplel/install-qt-action@v4
         with:
           version: 6.9.3
