@@ -83,15 +83,15 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      # - name: Install Qt
-      #   uses: jurplel/install-qt-action@v4
-      #   with:
-      #     version: ${{ env.QT_VERSION }}
-      #     host: ${{ env.QT_HOST }}
-      #     target: desktop
-      #     arch: ${{ env.QT_ARCH }}
-      #     aqtversion: "==3.2.*"
-      #     cache: true
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: ${{ env.QT_HOST }}
+          target: desktop
+          arch: ${{ env.QT_ARCH }}
+          aqtversion: "==3.2.*"
+          cache: true
 
       - name: "Guardrail: Verify Qt version is 6.10.1"
         shell: pwsh
