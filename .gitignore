@@ -33,6 +33,7 @@ build_vs26/
 build_vs_ci/
 build_vs_clean/
 build_vs_real/
+build_qtcreator/
 external/
 output.txt
 .gitignore
@@ -40,3 +41,14 @@ output.txt
 ./High level diagram day05.mmd
 ./Telemetry Path-day05.mmd
 /build_vs22_new
+
+# QT files
+.qtcreator/
+
+# Documentation generated files
+docs/mermaid/rendered/
+docs/mermaid/*.png
+docs/mermaid/local/
+
+#interview notes
+docs/interview
