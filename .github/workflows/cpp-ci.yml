@@ -84,34 +84,31 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      - name: Install Qt
-        id: install-qt
-        uses: jurplel/install-qt-action@v4
+      - name: Install Python for aqtinstall
+        uses: actions/setup-python@v5
         with:
-          version: '6.5.3'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_msvc2022_64'
-          dir: ${{ github.workspace }}
-          cache: 'true'
+          python-version: '3.11'
 
       - name: Install aqtinstall
-        run: pip install aqtinstall
+        run: pip install "aqtinstall==3.3.*"
 
-      - name: Install Qt from aqtinstall
+      - name: Install Qt
+        shell: pwsh
         run: |
-          aqt install-qt windows desktop 6.5.3 msvc2022_64 -O ${{ github.workspace }}/qt
-          echo "Qt6_DIR=${{ github.workspace }}/qt/6.5.3/msvc2022_64/lib/cmake/Qt6" >> $env:GITHUB_ENV
-          echo "${{ github.workspace }}/qt/6.5.3/msvc2022_64/bin" >> $env:GITHUB_PATH
+          aqt install-qt windows desktop 6.5.3 ${{ env.QT_ARCH }} -O ${{ github.workspace }}/qt
+          echo "Qt6_DIR=${{ github.workspace }}/qt/6.5.3/${{ env.QT_ARCH }}/lib/cmake/Qt6" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "${{ github.workspace }}/qt/6.5.3/${{ env.QT_ARCH }}/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: "Guardrail: Verify Qt was installed"
+      - name: Guardrail: Verify Qt was installed
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          Write-Host "Qt6_DIR is $env:Qt6_DIR"
           if (-not (Test-Path $env:Qt6_DIR)) {
             throw "Qt6_DIR not found at '$env:Qt6_DIR'"
           }
           Write-Host "Qt6_DIR found at $env:Qt6_DIR"
+          # Verify windeployqt is in the path and executable
           Get-Command windeployqt.exe
 
       - name: Configure (GUI Preset VS2022)
