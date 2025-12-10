@@ -35,6 +35,10 @@ void GatewayCore::start()
     prev_state_ = device_.state();
     device_.start();
 
+    // Apply queue capacity if requested
+    if (queue_capacity_ > 0) {
+        queue_.set_capacity(queue_capacity_);
+    }
     producer_thread_ = std::thread(&GatewayCore::producer_loop, this);
     consumer_thread_ = std::thread(&GatewayCore::consumer_loop, this);
 }
@@ -113,7 +117,7 @@ void GatewayCore::producer_loop()
             }
 
             // Idle or transitioning – wait a bit
-            std::this_thread::sleep_for(100ms);
+            std::this_thread::sleep_for(sample_interval_);
             continue;
         }
 
@@ -131,10 +135,8 @@ void GatewayCore::producer_loop()
                 }
             }
         }
-        else
-        {
-            std::this_thread::sleep_for(100ms);
-        }
+        // Pace sampling irrespective of whether we produced a sample
+        std::this_thread::sleep_for(sample_interval_);
     }
 
     // std::cout << "[GatewayCore::producer] exiting\n";
