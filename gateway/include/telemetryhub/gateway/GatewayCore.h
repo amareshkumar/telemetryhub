@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
+#include <algorithm>
 #include <thread>
 #include <optional>
 #include "telemetryhub/device/Device.h"
@@ -29,6 +31,10 @@ public:
         cloud_sample_interval_ = std::max<size_t>(1, interval); 
     }
 
+    // Runtime knobs
+    void set_sampling_interval(std::chrono::milliseconds ms) { sample_interval_ = ms; }
+    void set_queue_capacity(size_t cap) { queue_capacity_ = cap; }
+
 private:
     void producer_loop();
     void consumer_loop();
@@ -47,6 +53,8 @@ private:
     std::shared_ptr<ICloudClient> cloud_client_{nullptr};
     uint64_t accepted_counter_{0};
     device::DeviceState prev_state_{device::DeviceState::Idle};
+    std::chrono::milliseconds sample_interval_{std::chrono::milliseconds(100)};
+    size_t queue_capacity_{0};
 };
 
 } // namespace telemetryhub::gateway
