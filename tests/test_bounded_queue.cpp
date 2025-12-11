@@ -152,7 +152,7 @@ TEST_F(BoundedQueueTest, ConcurrentProducerConsumer) {
     // With bounded queue of 100 and 1000 pushes, some will be dropped
     // We should have consumed at most 100 items (the capacity)
     EXPECT_GT(consumed.load(), 0);
-    EXPECT_LE(consumed.load(), std::min(num_items, 100));
+    EXPECT_EQ(consumed.load(), std::min(num_items, 100));
 }
 
 TEST_F(BoundedQueueTest, MultipleProducersOneBoundedQueue) {
