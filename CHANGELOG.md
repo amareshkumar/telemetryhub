@@ -3,6 +3,59 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
+## [Unreleased]
+**Title:** Configuration System, Bounded Queues, Repository Restructuring
+
+### Added
+- Runtime configuration system with INI-style parser (`gateway/src/Config.cpp`)
+  - Support for `sampling_interval_ms`, `queue_size`, and `log_level` settings
+  - `--config <file>` CLI argument for `gateway_app`
+  - Example configuration file (`docs/config.example.ini`)
+- Bounded queue implementation with configurable capacity
+  - Drop-oldest strategy for real-time telemetry scenarios
+  - Runtime capacity adjustment via `set_capacity()`
+  - Prevents memory exhaustion under burst load
+- Comprehensive test coverage for new features
+  - Unit tests for configuration parser (`tests/test_config.cpp`) with 13 test cases
+  - Unit tests for bounded queue (`tests/test_bounded_queue.cpp`) with 11 test cases
+  - Concurrency tests for producer-consumer patterns
+- Docker deployment support
+  - `Dockerfile` for containerized builds
+  - `docker-compose.yml` for easy deployment
+- Professional documentation structure
+  - `docs/api.md`: Complete REST API documentation
+  - `docs/architecture.md`: Detailed system architecture (240 lines)
+  - `docs/configuration.md`: Configuration management guide
+  - `CONTRIBUTING.md`: Development and contribution guidelines
+  - `PERFORMANCE.md`: Benchmark results and performance metrics
+- Working code examples in `examples/` directory
+  - `basic_usage.cpp`: C++ integration example
+  - `rest_client_example.py`: Python REST API client
+  - `custom_config.ini`: Configuration file template
+- Day 15 interview preparation notes (`docs/technical-notes/day15_notes.md`)
+  - Senior engineer interview topics
+  - Design trade-offs and architectural decisions
+  - Testing strategies and production considerations
+
+### Changed
+- Moved `Version.h.in` from `telemetryhub/` to `device/include/telemetryhub/` for better organization
+- Reorganized daily development notes into `docs/technical-notes/` directory
+- Updated CMake configuration to handle new Version.h location
+- Enhanced README with professional project description
+- Improved `.gitignore` to exclude build artifacts, logs, and personal tracking files
+- Fixed `cloud_client_tests.cpp` expectations for device state transitions
+- Updated bounded queue test to reflect actual throughput behavior
+
+### Fixed
+- Cloud client integration test state transition expectations (Idle vs SafeState/Error)
+- Bounded queue concurrency test expectations (throughput vs capacity)
+- Missing `#include <cctype>` for `std::tolower` in Config.cpp
+- Missing `#include "telemetryhub/gateway/Config.h"` in main_gateway.cpp
+
+### Removed
+- Deleted empty `telemetryhub/` directory from repository root
+- Removed outdated `Version.h` file causing compilation conflicts
+
 ## [Released]
 ## [2.0.0] - 2025-12-09
 **Title:** REST, Security, Qt GUI, Profiling

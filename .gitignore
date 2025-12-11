@@ -25,6 +25,9 @@ _codeql_detected_source_root
 *.o
 *.obj
 
+# Generated Version.h (if it exists in source, don't commit auto-generated one)
+device/include/telemetryhub/Version.h
+
 # Log files
 *.log
 output.txt
