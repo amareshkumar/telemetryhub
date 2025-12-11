@@ -12,6 +12,7 @@
 ![Qt](https://img.shields.io/badge/Qt-6.10-brightgreen)
 ![License](https://img.shields.io/badge/license-Proprietary-red)
 [![codecov](https://codecov.io/gh/amareshkumar/telemetryhub/branch/main/graph/badge.svg)](https://codecov.io/gh/amareshkumar/telemetryhub)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)
 
 ## 🚀 Quick Start
 
