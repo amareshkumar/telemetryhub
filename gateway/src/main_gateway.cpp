@@ -1,4 +1,5 @@
 #include "telemetryhub/gateway/GatewayCore.h"
+#include "telemetryhub/gateway/Config.h"
 #include "telemetryhub/device/DeviceUtils.h"
 #include "telemetryhub/Version.h"
 #include "telemetryhub/gateway/Log.h"
@@ -27,7 +28,6 @@ static telemetryhub::LogLevel parse_level(std::string_view s){
 
 // Forward declare HTTP server runner
 namespace telemetryhub { namespace gateway { 
-    struct AppConfig; 
     int run_http_server(unsigned short port); 
     int run_http_server_with_config(unsigned short port, const AppConfig& cfg);
 }}
