@@ -83,6 +83,25 @@ int run_http_server(unsigned short port) {
     res.set_content("{\"ok\":true}", "application/json");
   });
 
+  svr.Get("/metrics", [](const httplib::Request& req, httplib::Response& res){
+    (void)req;
+    if (!g_gateway) {
+      res.status = 500;
+      res.set_content("{\"error\":\"Gateway not initialized\"}", "application/json");
+      return;
+    }
+    auto metrics = g_gateway->get_metrics();
+    std::ostringstream os;
+    os << "{";
+    os << "\"samples_processed\":" << metrics.samples_processed << ",";
+    os << "\"samples_dropped\":" << metrics.samples_dropped << ",";
+    os << "\"queue_depth\":" << metrics.queue_depth << ",";
+    os << "\"latency_p99_ms\":" << metrics.latency_p99_ms << ",";
+    os << "\"uptime_seconds\":" << metrics.uptime_seconds;
+    os << "}";
+    res.set_content(os.str(), "application/json");
+  });
+
   TELEMETRYHUB_LOGI("http", (std::string("Listening on port ") + std::to_string(port)).c_str());
   svr.listen("0.0.0.0", static_cast<int>(port));
   return 0;
