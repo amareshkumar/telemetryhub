@@ -57,6 +57,45 @@ add_test(
     NAME unit_tests
     COMMAND unit_tests
 )
+
+# Config loader tests
+add_executable(test_config
+    test_config.cpp
+)
+
+target_link_libraries(test_config
+    PRIVATE
+        gateway_core
+        GTest::gtest
+        GTest::gtest_main
+)
+
+target_compile_features(test_config PRIVATE cxx_std_20)
+
+add_test(
+    NAME test_config
+    COMMAND test_config
+)
+
+# Bounded queue tests
+add_executable(test_bounded_queue
+    test_bounded_queue.cpp
+)
+
+target_link_libraries(test_bounded_queue
+    PRIVATE
+        gateway_core
+        device
+        GTest::gtest
+        GTest::gtest_main
+)
+
+target_compile_features(test_bounded_queue PRIVATE cxx_std_20)
+
+add_test(
+    NAME test_bounded_queue
+    COMMAND test_bounded_queue
+)
 # add_test(NAME telemetryhub_tests COMMAND telemetryhub_tests)
 add_test(
   NAME log_file_sink
