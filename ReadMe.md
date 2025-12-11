@@ -3,7 +3,39 @@
 
 # TelemetryHub
 
-**TelemetryHub** is a small but realistic C++ project to keep embedded/systems skills sharp and prep for interviews. It models a simple telemetry pipeline with clear, testable C++20 code.
+> A production-ready C++20 telemetry pipeline demonstrating modern systems programming
+
+**TelemetryHub** is a high-performance telemetry data acquisition and distribution system showcasing modern C++20 design patterns, concurrent programming, and production-quality engineering practices.
+
+![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
+![CMake](https://img.shields.io/badge/CMake-3.20+-green)
+![Qt](https://img.shields.io/badge/Qt-6.10-brightgreen)
+![License](https://img.shields.io/badge/license-Proprietary-red)
+[![codecov](https://codecov.io/gh/amareshkumar/telemetryhub/branch/main/graph/badge.svg)](https://codecov.io/gh/amareshkumar/telemetryhub)
+
+## 🚀 Quick Start
+
+To get started with TelemetryHub:
+
+```bash
+# Clone and build (3 commands)
+git clone https://github.com/amareshkumar/telemetryhub
+cd telemetryhub
+cmake --preset linux-ninja-release && cmake --build --preset linux-ninja-release
+```
+
+### Run the Gateway App: 
+   ```bash
+   ./build/gateway/gateway_app --config docs/config.example.ini
+   ```
+### Send a Test Request:
+   ```bash
+   curl -X POST http://localhost:8080/start
+   ```
+   This starts the telemetry data flow. Check the status with:
+   ```bash
+   curl http://localhost:8080/status
+   ```
 
 ## About
 
@@ -342,3 +374,42 @@ Publish or mirror the code elsewhere
 
 Unauthorized use of this code is strictly prohibited.
 For permissions or inquiries, please contact: amaresh.kumar@live.in
+
+### 6. **Add Code Quality Metrics**
+
+**Integrate tools to show professionalism**:
+
+**a) Code Coverage**:
+```yaml
+# Add to .github/workflows/cpp-ci.yml
+- name: Generate coverage
+  run: |
+    cmake --preset linux-ninja-coverage
+    cmake --build --preset linux-ninja-coverage
+    ctest --preset linux-ninja-coverage
+    lcov --capture --directory . --output-file coverage.info
+    
+- name: Upload coverage to Codecov
+  uses: codecov/codecov-action@v3
+
+## 🔧 Troubleshooting
+
+### Build Issues
+- **Qt not found**: Set `THUB_QT_ROOT` environment variable
+- **MSVC header conflicts**: Use Developer PowerShell, not MSYS/Cygwin
+
+### Runtime Issues
+- **Port 8080 in use**: Change with `--port 8081`
+- **Config not loading**: Check file path and permissions
+
+See [full troubleshooting guide](docs/troubleshooting.md)
+
+# ![Demo](docs/demo.gif) coming soon...
+
+## 🚀 Roadmap
+
+- [ ] Prometheus metrics export
+- [ ] OpenTelemetry tracing
+- [ ] Grafana dashboard example
+- [ ] Kubernetes deployment manifests
+- [ ] Load balancing multiple gateways
