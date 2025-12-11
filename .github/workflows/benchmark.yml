@@ -1,0 +1,8 @@
+# .github/workflows/benchmark.yml
+- name: Run Benchmarks
+  run: ./build/tools/perf_tool > benchmark.txt
+  
+- name: Compare with Baseline
+  run: |
+    # Fail if <95% of previous performance
+    python tools/check_regression.py benchmark.txt baseline.txt
