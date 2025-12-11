@@ -1,7 +1,6 @@
-# Build directories
-build/
-build_vs22/
-build_vs_gui/
+# Build directories (all variants)
+build*/
+Testing/
 out/
 cmake-build-*/
 _codeql_build_dir/
@@ -10,11 +9,12 @@ _codeql_detected_source_root
 # IDE files
 .vscode/
 .idea/
+.qtcreator/
 *.sln
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
-./.gitignore
+
 # Generated files
 *.exe
 *.dll
@@ -22,27 +22,26 @@ _codeql_detected_source_root
 *.dylib
 *.a
 *.lib
+*.o
+*.obj
 
-# Logs
+# Log files
 *.log
-Testing/
-build_asan/
-build_ninja/
-build_vs/
-build_vs26/
-build_vs_ci/
-build_vs_clean/
-build_vs_real/
-build_qtcreator/
-external/
 output.txt
-.gitignore
+
+# External dependencies (if fetched)
+external/
+
+# Personal tracking (don't commit)
+docs/portfolio_enhancement_guide.ipynb
+
+# Old mermaid files (already migrated)
 ./Control flow-day05.mmd
 ./High level diagram day05.mmd
 ./Telemetry Path-day05.mmd
 /build_vs22_new
 
-# QT files
+# IDE specific
 .qtcreator/
 
 # Documentation generated files
@@ -52,3 +51,7 @@ docs/mermaid/local/
 
 #interview notes
 docs/interview
+.vscode/settings.json
+
+# Log files
+*.log
