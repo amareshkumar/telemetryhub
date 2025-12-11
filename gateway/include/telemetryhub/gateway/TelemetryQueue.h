@@ -11,6 +11,9 @@ namespace telemetryhub::gateway {
 class TelemetryQueue
 {
 public:
+    // max_size=0 means unbounded. If bounded and full, oldest item is dropped.
+    explicit TelemetryQueue(size_t max_size = 0) : max_size_(max_size) {}
+    void set_capacity(size_t cap) { max_size_ = cap; }
     void push(const device::TelemetrySample& sample);
     // Optimized path to avoid extra copy when the caller can move
     void push(device::TelemetrySample&& sample);
@@ -24,6 +27,7 @@ private:
     std::condition_variable cv_;
     std::queue<device::TelemetrySample> queue_;
     bool shutdown_ = false;
+    size_t max_size_ = 0;
 };
 
 } // namespace telemetryhub::gateway

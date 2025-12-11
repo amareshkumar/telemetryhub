@@ -10,12 +10,60 @@
 It simulates a pipeline with:
 
 - **Device** — explicit state machine (`Idle → Measuring → Error → SafeState`) emitting `TelemetrySample`.
-- **TelemetryQueue** — thread-safe producer/consumer with clean shutdown.
+- **TelemetryQueue** — thread-safe producer/consumer with clean shutdown and optional bounded capacity.
 - **GatewayCore** — runs background threads, owns device + queue, exposes a status API.
-- **CLI tools** — `raii_demo`, `device_smoke`, `queue_smoke`, `gateway_app`.
-- **Tests** — GoogleTest + CTest, including a basic multithreaded test.
+- **Configuration System** — INI-style config file for runtime settings (sampling interval, queue size, log level).
+- **CLI tools** — `gateway_app` with config support, `perf_tool` for benchmarking.
+- **Tests** — GoogleTest + CTest, including unit tests for config parsing and bounded queue behavior.
 
-Focus areas: RAII, pImpl, state machines, producer–consumer queues, thread coordination, safe shutdown.
+Focus areas: RAII, pImpl, state machines, producer–consumer queues, thread coordination, safe shutdown, externalized configuration.
+
+## Configuration
+
+TelemetryHub supports runtime configuration via a simple INI-style file.
+
+### Configuration File Format
+
+Create a config file (e.g., `config.ini`) with the following keys:
+
+```ini
+# Sampling interval in milliseconds
+sampling_interval_ms = 100
+
+# Max items in the in-memory queue (0 = unbounded)
+queue_size = 256
+
+# Log level: error | warn | info | debug | trace
+log_level = info
+```
+
+See `docs/config.example.ini` for a complete example.
+
+### Using Configuration
+
+Run `gateway_app` with the `--config` flag:
+
+```powershell
+# Windows
+.\build_vs_ci\gateway\Release\gateway_app.exe --config docs\config.example.ini
+
+# Linux
+./build/gateway/gateway_app --config docs/config.example.ini
+```
+
+Configuration values override defaults but can still be overridden by command-line arguments like `--log-level`.
+
+### Bounded Queue Behavior
+
+When `queue_size` is set to a non-zero value, the telemetry queue operates in bounded mode:
+- **Drop-oldest strategy**: When the queue is full, the oldest sample is dropped to make room for new data
+- **Use case**: Real-time telemetry where the most recent data is most valuable
+- **Default**: `queue_size = 0` (unbounded queue)
+
+Example bounded queue configuration:
+```ini
+queue_size = 100  # Keep only the 100 most recent samples
+```
 
 ## Diagrams
 - High-Level Architecture: `docs/mermaid/High level diagram_day12.mmd`
@@ -222,12 +270,49 @@ For a quick all-in-one verification (Windows):
 $env:THUB_QT_ROOT = "C:\Qt\6.10.1\msvc2022_64"
 pwsh -File tools/clean_reconfigure.ps1 -Preset vs2026-gui
 cmake --build --preset vs2026-gui -v
+
+# Option 1: Default settings
 pwsh -File tools/run_gui.ps1 -ApiBase "http://127.0.0.1:8080" -WaitTimeoutSec 40
+
+# Option 2: With custom configuration
+pwsh -File tools/run_gui.ps1 -ApiBase "http://127.0.0.1:8080" -WaitTimeoutSec 40 -ConfigFile docs\config.example.ini
+
 Invoke-WebRequest -UseBasicParsing http://localhost:8080/status | Select-Object -ExpandProperty Content
 Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start | Select-Object -ExpandProperty Content
 Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop  | Select-Object -ExpandProperty Content
 ctest -C Release -R http_integration --output-on-failure
 ```
+
+## Testing
+
+TelemetryHub uses **Google Test** for unit and integration testing:
+
+```powershell
+# Windows - Run all tests
+ctest -C Release --output-on-failure
+
+# Run specific test suites
+ctest -C Release -R unit_tests --output-on-failure       # Core unit tests
+ctest -C Release -R test_config --output-on-failure      # Configuration parser tests
+ctest -C Release -R test_bounded_queue --output-on-failure  # Bounded queue tests
+ctest -C Release -R test_gateway_e2e --output-on-failure # End-to-end gateway tests
+```
+
+### Test Coverage
+
+- **`unit_tests`**: Device state machine, telemetry queue, RAII wrappers
+- **`test_config`**: Config file parsing (INI format), default values, error handling
+- **`test_bounded_queue`**: Drop-oldest policy, capacity changes, concurrent producer-consumer
+- **`test_gateway_e2e`**: Full gateway lifecycle, device polling, queue operations
+- **`cloud_client_tests`**: Cloud connectivity mocks
+- **`http_integration`**: REST API endpoints (requires running gateway)
+
+## Documentation
+
+- **[docs/system_overview.md](docs/system_overview.md)**: Architecture diagrams, threading model, error handling strategies
+- **[docs/day15_notes.md](docs/day15_notes.md)**: Senior engineer interview notes covering configuration management, bounded queues, thread safety, and testing strategies
+- **[docs/config.example.ini](docs/config.example.ini)**: Example configuration file
+- **[docs/steps_to_verify.md](docs/steps_to_verify.md)**: Detailed build and verification commands
 
 ## Release Notes
 
