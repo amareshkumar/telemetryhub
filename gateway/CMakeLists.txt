@@ -2,6 +2,7 @@ add_library(gateway_core
     src/GatewayCore.cpp
     src/TelemetryQueue.cpp
     src/RestCloudClient.cpp
+    src/Config.cpp
 )
 
 target_include_directories(gateway_core

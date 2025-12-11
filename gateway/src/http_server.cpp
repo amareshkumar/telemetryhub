@@ -3,6 +3,7 @@
 
 #include "telemetryhub/gateway/GatewayCore.h"
 #include "telemetryhub/gateway/Log.h"
+#include "telemetryhub/gateway/Config.h"
 #include "telemetryhub/device/DeviceUtils.h"
 
 #include <sstream>
@@ -35,6 +36,14 @@ static std::string json_status() {
   }
   os << "}";
   return os.str();
+}
+
+static void apply_cfg_if_any(const telemetryhub::gateway::AppConfig* cfg){
+  if (!cfg) return;
+  if (!g_gateway) return;
+  g_gateway->set_sampling_interval(cfg->sampling_interval);
+  g_gateway->set_queue_capacity(cfg->queue_size);
+  ::telemetryhub::Logger::instance().set_level(cfg->log_level);
 }
 
 int run_http_server(unsigned short port) {
@@ -77,6 +86,12 @@ int run_http_server(unsigned short port) {
   TELEMETRYHUB_LOGI("http", (std::string("Listening on port ") + std::to_string(port)).c_str());
   svr.listen("0.0.0.0", static_cast<int>(port));
   return 0;
+}
+
+int run_http_server_with_config(unsigned short port, const telemetryhub::gateway::AppConfig& cfg) {
+  std::call_once(g_init_flag, []{ g_gateway = std::make_shared<GatewayCore>(); });
+  apply_cfg_if_any(&cfg);
+  return run_http_server(port);
 }
 
 } // namespace telemetryhub::gateway
