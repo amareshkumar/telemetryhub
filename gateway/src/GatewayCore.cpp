@@ -11,13 +11,29 @@ using namespace std::chrono_literals; // enable 100ms duration literal
 namespace telemetryhub::gateway {
 
 GatewayCore::GatewayCore()
-    : device_{} // default Device (e.g. fault after 8 samples)
+    : device_{}, // default Device (e.g. fault after 8 samples)
+      start_time_(std::chrono::steady_clock::now())
 {
 }
 
 GatewayCore::~GatewayCore()
 {
     stop();
+}
+
+GatewayCore::Metrics GatewayCore::get_metrics() const
+{
+    Metrics m;
+    m.samples_processed = metrics_samples_processed_.load();
+    m.samples_dropped = metrics_samples_dropped_.load();
+    m.queue_depth = queue_.size();
+    m.latency_p99_ms = 0.0; // TODO: Implement latency tracking with histogram
+    
+    auto now = std::chrono::steady_clock::now();
+    auto uptime = std::chrono::duration_cast<std::chrono::seconds>(now - start_time_);
+    m.uptime_seconds = static_cast<uint64_t>(uptime.count());
+    
+    return m;
 }
 
 void GatewayCore::start()
@@ -126,6 +142,7 @@ void GatewayCore::producer_loop()
         {
             // Blocking push in current queue implementation; treat as accepted
             queue_.push(*sample_opt);
+            metrics_samples_processed_++;
             accepted_counter_++;
             if (cloud_client_ && (accepted_counter_ % cloud_sample_interval_ == 0))
             {
