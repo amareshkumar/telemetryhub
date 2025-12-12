@@ -37,6 +37,8 @@ external/
 
 # Personal tracking (don't commit)
 docs/portfolio_enhancement_guide.ipynb
+docs/interview-topics.md
+SENIOR_LEVEL_TODO.md
 
 # Old mermaid files (already migrated)
 ./Control flow-day05.mmd

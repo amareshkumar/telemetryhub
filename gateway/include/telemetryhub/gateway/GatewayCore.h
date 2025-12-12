@@ -35,6 +35,15 @@ public:
     void set_sampling_interval(std::chrono::milliseconds ms) { sample_interval_ = ms; }
     void set_queue_capacity(size_t cap) { queue_capacity_ = cap; }
 
+    struct Metrics {
+        uint64_t samples_processed{0};
+        uint64_t samples_dropped{0};
+        size_t queue_depth{0};
+        double latency_p99_ms{0.0};
+        uint64_t uptime_seconds{0};
+    };
+    Metrics get_metrics() const;
+
 private:
     void producer_loop();
     void consumer_loop();
@@ -55,6 +64,11 @@ private:
     device::DeviceState prev_state_{device::DeviceState::Idle};
     std::chrono::milliseconds sample_interval_{std::chrono::milliseconds(100)};
     size_t queue_capacity_{0};
+    
+    // Metrics tracking
+    std::atomic<uint64_t> metrics_samples_processed_{0};
+    std::atomic<uint64_t> metrics_samples_dropped_{0};
+    std::chrono::steady_clock::time_point start_time_;
 };
 
 } // namespace telemetryhub::gateway

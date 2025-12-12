@@ -29,3 +29,11 @@ add_executable(perf_tool
 target_link_libraries(perf_tool
     PRIVATE gateway_core
 )
+
+add_executable(stress_test
+    stress_test.cpp
+)
+
+target_link_libraries(stress_test
+    PRIVATE gateway_core
+)
