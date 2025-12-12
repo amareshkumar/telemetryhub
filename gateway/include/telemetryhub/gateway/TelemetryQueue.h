@@ -23,7 +23,7 @@ public:
     void shutdown();
     
     // Get current queue depth (for metrics)
-    size_t size() const;
+    size_t size();
 
 private:
     std::mutex mutex_;

@@ -12,16 +12,4 @@ public:
 
     virtual void push_status (device::DeviceState state) = 0;
 };
-
-enum class UploadResult {
-    Success,
-    TransientFailure,  // Retry
-    PermanentFailure   // Circuit breaker
-};
-
-class CloudClientWithRetry : public ICloudClient {
-    CircuitBreaker breaker_;
-    RetryPolicy retry_{ExponentialBackoff{100ms, 5s}};
-    // ...
-};
 } // namespace telemetryhub::gateway
