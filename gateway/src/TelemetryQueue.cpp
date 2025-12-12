@@ -57,4 +57,10 @@ void TelemetryQueue::shutdown()
     cv_.notify_all();
 }
 
+size_t TelemetryQueue::size()
+{
+    std::lock_guard lock(mutex_);
+    return queue_.size();
+}
+
 } // namespace telemetryhub::gateway

@@ -21,6 +21,9 @@ public:
 
     // Signal that no more items will be produced; unblocks waiting consumers.
     void shutdown();
+    
+    // Get current queue depth (for metrics)
+    size_t size();
 
 private:
     std::mutex mutex_;
