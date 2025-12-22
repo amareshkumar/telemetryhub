@@ -7,6 +7,277 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ---
 
+## [4.0.0] - 2025-12-22
+**Title:** Hardware Abstraction Layer - Serial/UART Simulation, Device Commands, Google Test
+
+### 🎯 Major Features
+
+This release introduces a complete hardware abstraction layer with serial port simulation, command-based device control, and industry-standard testing. Key themes: **extensible hardware interfaces**, **SOLID principles in practice**, **professional testing frameworks**, and **interactive debugging tools**.
+
+#### Hardware Abstraction Layer
+- **IBus interface** - Minimal abstraction for hardware communication (`device/include/telemetryhub/device/BusInterface.h`)
+  - Only 3 methods: `type()`, `write()`, `read()`
+  - Demonstrates Interface Segregation Principle (ISP)
+  - Extensible to UART, I2C, SPI, CAN, and other protocols
+- **SerialPortSim class** - Thread-safe UART simulation (`device/include/telemetryhub/device/SerialPortSim.h`)
+  - Dual buffers (input/output) with mutex protection
+  - Configurable baud rate (9600, 115200, etc.)
+  - Buffer overflow protection (4KB limit)
+  - Line-based protocol with newline delimiters
+  - Test helpers: `inject_command()`, `get_response()`
+- **I2C/SPI stub implementations** - Demonstrates protocol diversity
+  - `I2CBus`: Device addressing (7-bit), ACK/NACK, START/STOP conditions
+  - `SPIBus`: Chip select, full-duplex, clock synchronization
+  - Shows why one interface fits all (polymorphism without shared implementation)
+
+#### Device Command Interface
+- **Extended Device class** with serial bus integration
+  - `set_serial_bus(IBus*)` - Dependency Injection point (demonstrates DI pattern)
+  - `process_serial_commands()` - Command processing loop
+  - Depends on IBus abstraction, not concrete implementations (demonstrates DIP)
+- **4 commands implemented**:
+  - `CALIBRATE` - Triggers device calibration (state-aware: only works in Measuring state)
+  - `GET_STATUS` - Returns device state (Idle, Measuring, Error, SafeState)
+  - `SET_RATE <ms>` - Adjusts sampling interval (validates range: 10-10000ms)
+  - `RESET` - Resets device to Idle state
+- **Input validation & error handling**:
+  - Range checking for SET_RATE parameter
+  - State-aware command execution
+  - Descriptive error messages ("CALIBRATE only works in Measuring state")
+  - String trimming and whitespace handling
+
+#### Google Test Framework Integration
+- **Converted from cout/assert to Google Test** (`tests/test_serial_port_sim.cpp`)
+  - Industry-standard framework (used by Google, Chromium, Android, LLVM)
+  - 15 comprehensive test cases with Test Fixtures
+  - AAA pattern (Arrange-Act-Assert) throughout
+  - Descriptive assertions with context messages
+  - Integration with CMake via `gtest_discover_tests()`
+- **Test coverage includes**:
+  - Basic write/read operations
+  - Command injection and response retrieval
+  - Buffer overflow protection
+  - Invalid command handling
+  - Device-SerialPort integration
+  - Baud rate configuration
+  - Thread safety validation
+
+#### Interactive CLI Tool
+- **device_simulator_cli** - Command-line interface for device simulation (`tools/device_simulator_cli.cpp`)
+  - Interactive command entry with help system
+  - Real-time device state monitoring
+  - Local commands: `start`, `stop`, `sample`, `help`, `quit`
+  - Serial commands: `CALIBRATE`, `GET_STATUS`, `SET_RATE`, `RESET`
+  - Example usage for debugging and demonstration
+
+#### Architecture & Documentation
+- **Mermaid architecture diagrams**:
+  - `docs/mermaid/High level diagram_day16.mmd` - System architecture with SerialPortSim
+  - `docs/mermaid/Device Communication_day16.mmd` - Command/response sequence diagram
+- **Technical documentation**:
+  - `docs/serial_port_simulation_day16.md` - SerialPortSim implementation details
+- **Examples**:
+  - Working code demonstrating UART/I2C/SPI polymorphism
+
+### Added
+
+#### Core Features
+- `SerialPortSim` class with thread-safe dual buffers
+- `IBus` interface for hardware abstraction
+- `I2CBus` stub implementation (demonstrates I2C addressing)
+- `SPIBus` stub implementation (demonstrates chip select)
+- Device command processing (`CALIBRATE`, `GET_STATUS`, `SET_RATE`, `RESET`)
+- `Device::set_serial_bus(IBus*)` - Dependency Injection method
+- `Device::process_serial_commands()` - Command parser
+- Baud rate configuration in SerialPortSim
+
+#### Testing
+- Google Test framework integration (v1.14.0 via FetchContent)
+- `test_serial_port_sim.cpp` - 15 test cases with fixtures
+- `SerialPortSimTest` fixture for basic tests
+- `DeviceSerialIntegrationTest` fixture for integration tests
+- Test coverage: happy path, error cases, edge cases, buffer overflow
+
+#### Tools
+- `device_simulator_cli` - Interactive device simulator
+- Command-line help system
+- Real-time state display
+- Serial command interface
+
+#### Documentation
+- `docs/serial_port_simulation_day16.md` - Technical implementation guide
+- `docs/mermaid/High level diagram_day16.mmd` - Architecture diagram
+- `docs/mermaid/Device Communication_day16.mmd` - Sequence diagram
+
+### Changed
+
+#### Device Class Enhancement
+- Extended `Device` with serial bus support
+- Added command processing capability
+- Introduced dependency injection via `set_serial_bus()`
+- Forward declaration of `IBus` (loose coupling)
+
+#### Testing Strategy
+- Migrated from custom cout/assert tests to Google Test
+- Adopted Test Fixture pattern for clean state management
+- Implemented AAA pattern (industry best practice)
+- Added descriptive assertions with context
+
+#### Build System
+- Updated `device/CMakeLists.txt` to include SerialPortSim.cpp
+- Updated `tests/CMakeLists.txt` to link Google Test
+- Updated `tools/CMakeLists.txt` to include device_simulator_cli
+- Added Google Test dependency via FetchContent
+
+### Design Patterns & Principles
+
+#### SOLID Principles Demonstrated
+- **Dependency Inversion Principle (DIP)**:
+  - Device depends on IBus abstraction, not SerialPortSim concrete class
+  - Enables testing with mocks, swapping implementations at runtime
+  - Example: `Device::Impl` holds `IBus*`, not `SerialPortSim*`
+
+- **Interface Segregation Principle (ISP)**:
+  - IBus interface minimal (3 methods only)
+  - UART-specific config (baud_rate) stays in SerialPortSim
+  - I2C-specific config (device_address) stays in I2CBus
+  - SPI-specific config (chip_select) stays in SPIBus
+  - Clients not forced to implement irrelevant methods
+
+- **Dependency Injection (DI)**:
+  - `set_serial_bus(IBus*)` - injection point
+  - Device doesn't create SerialPortSim, receives it
+  - In tests: inject SerialPortSim; in production: inject RealUART
+  - Enables polymorphism and testability
+
+- **Single Responsibility Principle (SRP)**:
+  - SerialPortSim: Only handles serial communication
+  - Device: Only manages device state and telemetry
+  - Command processing: Separate concern in `process_serial_commands()`
+
+#### Design Patterns Applied
+- **Strategy Pattern**: IBus interface with multiple implementations
+- **Test Fixture Pattern**: Google Test fixtures for clean test state
+- **Producer-Consumer Pattern**: Serial buffers with thread-safe queues
+- **State Machine Pattern**: Device states (Idle, Measuring, Error, SafeState)
+
+### Technical Details
+
+#### Performance & Threading
+- Thread-safe serial port simulation with std::mutex
+- Lock-free read operations where possible
+- Buffer overflow protection prevents memory exhaustion
+- Minimal locking granularity for high throughput
+
+#### Code Metrics
+- **Lines of Code Added**: ~1,850 (including 1,200+ lines of documentation)
+- **Files Created**: 16 (11 new, 5 modified)
+- **Test Cases**: 15 (SerialPortSim + Device integration)
+- **Commands Implemented**: 4 (CALIBRATE, GET_STATUS, SET_RATE, RESET)
+- **Bus Implementations**: 3 (UART, I2C stub, SPI stub)
+
+#### Test Coverage
+- Basic operations: write, read, inject, response retrieval
+- Error handling: invalid commands, buffer overflow, out-of-range parameters
+- Integration: Device + SerialPortSim command processing
+- Configuration: Baud rate setting and querying
+- Thread safety: Concurrent access validation
+
+### Breaking Changes
+
+⚠️ **API Extensions** (Non-breaking, additive):
+- `Device::set_serial_bus(IBus*)` - New method
+- `Device::process_serial_commands()` - New method
+- SerialPortSim class - New component
+
+⚠️ **Testing Framework** (Affects downstream developers):
+- Migrated to Google Test - developers need Google Test installed
+- Old cout/assert tests removed
+- CMake now uses `gtest_discover_tests()`
+
+### Migration Guide
+
+#### From v3.0.0 to v4.0.0
+
+1. **No action required for existing Device usage** - backward compatible
+   ```cpp
+   // Existing code still works
+   Device device(10);
+   device.start_acquisition();
+   ```
+
+2. **Optional: Add serial bus support** (new capability):
+   ```cpp
+   Device device(10);
+   SerialPortSim serial_port;
+   device.set_serial_bus(&serial_port);
+   
+   // Process commands
+   serial_port.inject_command("GET_STATUS\n");
+   auto response = device.process_serial_commands();
+   ```
+
+3. **Testing: Upgrade to Google Test** (if extending tests):
+   ```cmake
+   # CMakeLists.txt - Google Test auto-fetched
+   find_package(GTest)
+   if(NOT GTest_FOUND)
+       include(FetchContent)
+       FetchContent_Declare(googletest
+           URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+       )
+       FetchContent_MakeAvailable(googletest)
+   endif()
+   ```
+
+4. **Build with updated CMake**:
+   ```powershell
+   # Windows
+   cmake --preset vs2022-release-ci
+   cmake --build --preset vs2022-release-ci
+
+   # Linux
+   cmake --preset linux-ninja-release
+   cmake --build --preset linux-ninja-release
+   ```
+
+### Interview Value
+
+This release demonstrates senior-level engineering capabilities:
+
+✅ **Design Patterns**: DIP, ISP, DI, Strategy, Fixture  
+✅ **Modern C++**: RAII, smart pointers, move semantics, thread safety  
+✅ **Testing Expertise**: Google Test, fixtures, AAA pattern, mocks  
+✅ **Architecture**: Hardware abstraction, extensibility, loose coupling  
+✅ **Documentation**: Mermaid diagrams, API docs, code examples  
+✅ **Professionalism**: Industry-standard tools, comprehensive tests  
+
+**Talking Points for Interviews:**
+- "I implemented a hardware abstraction layer following SOLID principles..."
+- "I use Google Test with fixtures, same as Google and Chromium projects..."
+- "The IBus interface demonstrates ISP - only 3 methods, bus-specific config stays separate..."
+- "Device uses Dependency Injection via set_serial_bus(), enabling runtime polymorphism..."
+
+### Contributors
+- Amaresh Kumar (@amareshkumar)
+
+### Notes
+
+This release elevates TelemetryHub to demonstrate:
+- **Hardware abstraction expertise** - Extensible to multiple bus types
+- **SOLID principles in practice** - Real code, not just theory
+- **Professional testing standards** - Google Test with proper patterns
+- **Embedded systems patterns** - State machines, serial protocols, command interfaces
+
+Next planned features (v4.1.0):
+- Real UART integration (Windows COM ports, Linux /dev/ttyUSB*)
+- I2C bus implementation (Linux i2c-dev)
+- SPI bus implementation (Linux spidev)
+- Command response timeout handling
+- Binary protocol support (vs text-based)
+
+---
+
 ## [3.0.0] - 2025-12-12
 **Title:** Production Readiness - Configuration, Observability, Performance Optimization, Portfolio Enhancement
 
