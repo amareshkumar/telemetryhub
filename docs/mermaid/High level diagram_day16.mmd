@@ -1,0 +1,47 @@
+flowchart LR
+    %% TelemetryHub high-level architecture (Day 16 - Serial/UART Integration)
+
+    subgraph Device Layer
+        D["Device (C++ state machine)"]
+        SP["SerialPortSim (UART)"]
+        BUS["IBus Interface"]
+    end
+
+    subgraph Gateway Layer
+        GC["GatewayCore (latest_sample/state)"]
+        Q["TelemetryQueue&lt;TelemetrySample&gt;"]
+        REST["REST (cpp-httplib)\n/status /start /stop /metrics"]
+    end
+
+    subgraph Presentation Layer
+        CLI["gateway_app (hosts REST)"]
+        Test["http_integration.ps1 (Windows)"]
+        GUI["Qt6 Desktop UI\n(QNetworkAccessManager + QTimer 1s)"]
+    end
+
+    subgraph Tools
+        DEVSIM["device_simulator_cli\n(interactive command tool)"]
+    end
+
+    %% Device layer connections
+    SP -.implements.-> BUS
+    D --> SP
+    SP --> D
+
+    %% Gateway connections
+    D --> GC
+    GC --> Q
+    Q --> GC
+    CLI --> REST
+    REST --> GC
+    Test --> REST
+    GUI --> REST
+
+    %% Tools connections
+    DEVSIM -.sends commands.-> SP
+    DEVSIM -.reads responses.-> SP
+
+    %% Styling
+    style SP fill:#e1f5ff,stroke:#01579b,stroke-width:3px
+    style BUS fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style DEVSIM fill:#f3e5f5,stroke:#4a148c,stroke-width:2px

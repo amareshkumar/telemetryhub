@@ -1,6 +1,7 @@
 add_library(device STATIC
     src/FileHandle.cpp    
     src/Device.cpp
+    src/SerialPortSim.cpp
     # src/DeviceConfig.cpp
 )
 
