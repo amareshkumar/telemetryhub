@@ -1,0 +1,76 @@
+sequenceDiagram
+    participant CLI as device_simulator_cli
+    participant SP as SerialPortSim
+    participant DEV as Device
+    participant STATE as Device State Machine
+
+    Note over CLI,STATE: Device Communication Flow via Serial/UART
+
+    %% Initialization
+    CLI->>SP: Create SerialPortSim
+    CLI->>DEV: Create Device(fault_after=10)
+    CLI->>DEV: set_serial_bus(&serial_port)
+    Note over SP,DEV: Serial port connected
+
+    %% Start device
+    CLI->>DEV: start()
+    DEV->>STATE: Transition Idle → Measuring
+    DEV-->>CLI: State: Measuring
+
+    %% GET_STATUS command
+    CLI->>SP: inject_command("GET_STATUS")
+    Note over SP: Command queued in input_buffer
+    CLI->>DEV: process_serial_commands()
+    DEV->>SP: read(buffer, 256)
+    SP-->>DEV: "GET_STATUS\n"
+    DEV->>STATE: Check state
+    STATE-->>DEV: Measuring, Seq=0
+    DEV->>SP: write("STATUS: Measuring, Seq=0\n")
+    SP->>CLI: get_response()
+    SP-->>CLI: "STATUS: Measuring, Seq=0"
+
+    %% Read sample
+    CLI->>DEV: read_sample()
+    DEV->>STATE: Generate TelemetrySample
+    STATE-->>DEV: {value, unit, seq_id=0}
+    DEV-->>CLI: TelemetrySample
+
+    %% CALIBRATE command
+    CLI->>SP: inject_command("CALIBRATE")
+    CLI->>DEV: process_serial_commands()
+    DEV->>SP: read(buffer, 256)
+    SP-->>DEV: "CALIBRATE\n"
+    DEV->>STATE: reset_sequence()
+    STATE-->>DEV: sequence=0, error_counter=0
+    DEV->>SP: write("OK: Calibrated\n")
+    SP->>CLI: get_response()
+    SP-->>CLI: "OK: Calibrated"
+
+    %% SET_RATE command
+    CLI->>SP: inject_command("SET_RATE=500")
+    CLI->>DEV: process_serial_commands()
+    DEV->>SP: read(buffer, 256)
+    SP-->>DEV: "SET_RATE=500\n"
+    DEV->>STATE: Set sampling_rate_ms=500
+    STATE-->>DEV: Rate updated
+    DEV->>SP: write("OK: Rate set to 500 ms\n")
+    SP->>CLI: get_response()
+    SP-->>CLI: "OK: Rate set to 500 ms"
+
+    %% RESET command
+    CLI->>SP: inject_command("RESET")
+    CLI->>DEV: process_serial_commands()
+    DEV->>SP: read(buffer, 256)
+    SP-->>DEV: "RESET\n"
+    DEV->>STATE: Transition to Idle, reset_sequence()
+    STATE-->>DEV: Idle state
+    DEV->>SP: write("OK: Reset to Idle\n")
+    SP->>CLI: get_response()
+    SP-->>CLI: "OK: Reset to Idle"
+
+    %% Stop device
+    CLI->>DEV: stop()
+    DEV->>STATE: Transition Measuring → Idle
+    DEV-->>CLI: State: Idle
+
+    Note over CLI,STATE: Serial communication complete
