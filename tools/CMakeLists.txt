@@ -30,6 +30,14 @@ target_link_libraries(perf_tool
     PRIVATE gateway_core
 )
 
+add_executable(device_simulator_cli
+    device_simulator_cli.cpp
+)
+
+target_link_libraries(device_simulator_cli
+    PRIVATE device
+)
+
 add_executable(stress_test
     stress_test.cpp
 )

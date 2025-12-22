@@ -58,6 +58,20 @@ add_test(
     COMMAND unit_tests
 )
 
+# Serial Port Simulation test (Google Test)
+add_executable(test_serial_port_sim
+    test_serial_port_sim.cpp
+)
+
+target_link_libraries(test_serial_port_sim
+    PRIVATE 
+        device
+        GTest::gtest
+        GTest::gtest_main
+)
+target_compile_features(test_serial_port_sim PRIVATE cxx_std_20)
+gtest_discover_tests(test_serial_port_sim)
+
 # Config loader tests
 add_executable(test_config
     test_config.cpp
