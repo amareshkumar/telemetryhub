@@ -185,7 +185,7 @@ Device State: SafeState
 - Test device commands without REST API
 - Debug serial command parsing
 - Demonstrate hardware abstraction (UART simulation)
-- Interview demonstration tool
+- Rapid prototyping and development
 
 ## Folder Structure
 ```text
@@ -409,7 +409,6 @@ ctest -C Release -R test_gateway_e2e --output-on-failure # End-to-end gateway te
 ## Documentation
 
 - **[docs/system_overview.md](docs/system_overview.md)**: Architecture diagrams, threading model, error handling strategies
-- **[docs/day15_notes.md](docs/day15_notes.md)**: Senior engineer interview notes covering configuration management, bounded queues, thread safety, and testing strategies
 - **[docs/config.example.ini](docs/config.example.ini)**: Example configuration file
 - **[docs/steps_to_verify.md](docs/steps_to_verify.md)**: Detailed build and verification commands
 
@@ -419,45 +418,13 @@ See the [CHANGELOG](CHANGELOG.md) for full version history.
 
 Latest release: **v4.0.0** - Hardware Abstraction & Device Commands
 
+## 📜 License
 
-📜 Rights & Usage Notice
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-This repository is publicly visible for portfolio and evaluation purposes.
-All rights to the source code and associated materials are reserved.
-
-You may:
-
-View and read the code for personal or evaluation purposes.
-
-You may not, without explicit written permission:
-
-Copy, reuse, modify, or redistribute any portion of the code
-
-Use the code in commercial, academic, or production projects
-
-Create derivative works based on this project
-
-Publish or mirror the code elsewhere
-
-Unauthorized use of this code is strictly prohibited.
-For permissions or inquiries, please contact: amaresh.kumar@live.in
-
-### 6. **Add Code Quality Metrics**
-
-**Integrate tools to show professionalism**:
-
-**a) Code Coverage**:
-```yaml
-# Add to .github/workflows/cpp-ci.yml
-- name: Generate coverage
-  run: |
-    cmake --preset linux-ninja-coverage
-    cmake --build --preset linux-ninja-coverage
-    ctest --preset linux-ninja-coverage
-    lcov --capture --directory . --output-file coverage.info
-    
-- name: Upload coverage to Codecov
-  uses: codecov/codecov-action@v3
+**Author:** Amaresh Kumar  
+**Contact:** amaresh.kumar@live.in  
+**Repository:** https://github.com/amareshkumar/telemetryhub
 
 ## 🔧 Troubleshooting
 
