@@ -4,19 +4,24 @@
 # TelemetryHub
 
 > **Production-ready C++20 telemetry pipeline demonstrating:**  
-> Modern C++ (RAII, move semantics), concurrent programming (8.8M ops/sec),  
-> and enterprise-grade engineering (CI/CD, sanitizers, comprehensive docs)
+> Modern C++ (RAII, move semantics), concurrent programming (9.1M ops/sec),  
+> hardware abstraction (UART/I2C/SPI), and enterprise-grade engineering  
+> (CI/CD, sanitizers, Google Test, comprehensive docs)
 
 ## Why This Project?
 TelemetryHub showcases real-world systems programming patterns used in:
-- **IoT data collection** (sensor data aggregation)
+- **IoT data collection** (sensor data aggregation with serial protocols)
+- **Embedded systems** (hardware abstraction for UART/I2C/SPI buses)
 - **Financial systems** (market data processing)
 - **Observability platforms** (metrics collection)
 
 **Key Differentiators:**
 - 🚀 **Performance**: 9.1M ops/sec with move semantics (measured, not claimed)
 - 🛡️ **Safety**: Thread sanitizers in CI catch race conditions
+- 🔌 **Hardware Abstraction**: Extensible IBus interface for UART, I2C, SPI
+- 🧪 **Testing Excellence**: Google Test framework with 50+ test cases
 - 📊 **Professionalism**: Architecture docs, API specs, runnable examples
+- 🎯 **SOLID Principles**: DIP, ISP, and DI demonstrated with real code
 
 **TelemetryHub** is a high-performance telemetry data acquisition and distribution system showcasing modern C++20 design patterns, concurrent programming, and production-quality engineering practices.
 
@@ -56,13 +61,15 @@ cmake --preset linux-ninja-release && cmake --build --preset linux-ninja-release
 It simulates a pipeline with:
 
 - **Device** — explicit state machine (`Idle → Measuring → Error → SafeState`) emitting `TelemetrySample`.
+- **Hardware Abstraction** — IBus interface with SerialPortSim (UART), I2CBus, SPIBus implementations.
+- **Device Commands** — CALIBRATE, GET_STATUS, SET_RATE, RESET via serial interface.
 - **TelemetryQueue** — thread-safe producer/consumer with clean shutdown and optional bounded capacity.
 - **GatewayCore** — runs background threads, owns device + queue, exposes a status API.
 - **Configuration System** — INI-style config file for runtime settings (sampling interval, queue size, log level).
-- **CLI tools** — `gateway_app` with config support, `perf_tool` for benchmarking.
-- **Tests** — GoogleTest + CTest, including unit tests for config parsing and bounded queue behavior.
+- **CLI tools** — `gateway_app` with config support, `device_simulator_cli` for interactive testing, `perf_tool` for benchmarking.
+- **Tests** — Google Test framework with 50+ tests, including unit tests for serial simulation, config parsing, and bounded queue behavior.
 
-Focus areas: RAII, pImpl, state machines, producer–consumer queues, thread coordination, safe shutdown, externalized configuration.
+Focus areas: RAII, pImpl, state machines, hardware abstraction, SOLID principles (DIP, ISP, DI), producer–consumer queues, thread coordination, safe shutdown, externalized configuration.
 
 ## Configuration
 
@@ -133,6 +140,52 @@ Notes:
 ## add log and e2e test
 ./build/gateway/gateway_app --log-level debug
 ./build/gateway/gateway_app --log-level trace --log-file thub.log
+
+## Device Simulator CLI
+
+Interactive command-line tool for testing device commands and serial communication:
+
+```powershell
+# Windows
+.\build_vs_ci\tools\Release\device_simulator_cli.exe
+
+# Linux
+./build/tools/device_simulator_cli
+```
+
+**Available Commands:**
+- **Local commands**: `start`, `stop`, `sample`, `help`, `quit`
+- **Serial commands**: `CALIBRATE`, `GET_STATUS`, `SET_RATE <ms>`, `RESET`
+
+**Example Session:**
+```
+TelemetryHub Device Simulator CLI
+Type 'help' for commands, 'quit' to exit
+
+Device State: Idle
+> start
+Starting device acquisition...
+Device State: Measuring
+
+> GET_STATUS
+Response: STATE=Measuring
+
+> CALIBRATE
+Response: OK: Calibration in progress
+
+> SET_RATE 200
+Response: OK: Sampling rate set to 200 ms
+
+> stop
+Stopping device acquisition...
+Device State: SafeState
+```
+
+**Use Cases:**
+- Test device commands without REST API
+- Debug serial command parsing
+- Demonstrate hardware abstraction (UART simulation)
+- Interview demonstration tool
 
 ## Folder Structure
 ```text
@@ -364,7 +417,7 @@ ctest -C Release -R test_gateway_e2e --output-on-failure # End-to-end gateway te
 
 See the [CHANGELOG](CHANGELOG.md) for full version history.
 
-Latest release: **v1.1.0**
+Latest release: **v4.0.0** - Hardware Abstraction & Device Commands
 
 
 📜 Rights & Usage Notice
