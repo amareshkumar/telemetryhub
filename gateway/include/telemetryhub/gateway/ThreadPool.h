@@ -21,11 +21,11 @@ namespace telemetryhub::gateway {
  * - Metrics: jobs processed, average processing time
  * - Graceful shutdown with job completion
  * 
- * Design considerations:
- * - Reduces thread creation overhead for high-frequency tasks
- * - Limits concurrency for bounded resource usage
- * - Better CPU utilization through worker reuse
- * - Minimal queue latency for telemetry processing workload
+ * Interview note: Trade-offs of thread pools
+ * + Pros: Reduces thread creation overhead, limits concurrency, better CPU utilization
+ * + Cons: Queue memory overhead, potential latency if workers busy, complexity
+ * + When to use: High-frequency tasks, expensive thread creation, need concurrency control
+ * + When NOT to use: Low task frequency, tasks block on I/O, need guaranteed low latency
  */
 class ThreadPool {
 public:

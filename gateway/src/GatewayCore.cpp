@@ -259,9 +259,9 @@ void GatewayCore::consumer_loop()
 void GatewayCore::process_sample_with_metrics(const device::TelemetrySample& sample)
 {
     // Example derived metric: compute moving average, variance, etc.
-    // This demonstrates CPU-bound work that benefits from parallel processing
+    // For interview: This demonstrates work that benefits from thread pool
     
-    // Simulate some processing work
+    // Simulate some processing work (Day 17 demo)
     // In production, this would be:
     // - Statistical calculations (moving average, stddev, percentiles)
     // - Data transformation (unit conversions, normalization)
