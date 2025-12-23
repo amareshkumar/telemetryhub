@@ -36,13 +36,13 @@ is required and greatly appreciated:
    - Project: TelemetryHub
    - Repository: https://github.com/amareshkumar/telemetryhub
 
-3. **Portfolio Project Notice**: This software was developed as a demonstration of
-   modern C++20 engineering practices, including RAII, move semantics, concurrent
-   programming, and comprehensive testing.
+3. **Development Notice**: This software demonstrates modern C++20 engineering
+   practices, including RAII, move semantics, concurrent programming, and
+   comprehensive testing.
 
 ## Note to Users
 
-This project demonstrates professional software engineering techniques and serves
-as a portfolio piece. While you are free to use, modify, and distribute this code
-under the MIT License terms, acknowledgment of the original work is appreciated
-and helps support open-source development.
+This project demonstrates professional software engineering techniques. You are
+free to use, modify, and distribute this code under the MIT License terms.
+Acknowledgment of the original work is appreciated and helps support open-source
+development.
