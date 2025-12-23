@@ -25,6 +25,8 @@ static std::string json_status() {
   std::ostringstream os;
   auto state = g_gateway->device_state();
   auto latest = g_gateway->latest_sample();
+  auto metrics = g_gateway->get_metrics();
+  
   os << "{\"state\":\"" << device::to_string(state) << "\",";
   os << "\"latest_sample\":";
   if (latest) {
@@ -34,6 +36,12 @@ static std::string json_status() {
   } else {
     os << "null";
   }
+  os << ",\"metrics\":";
+  os << "{\"samples_processed\":" << metrics.samples_processed
+     << ",\"samples_dropped\":" << metrics.samples_dropped
+     << ",\"pool_jobs_processed\":" << metrics.pool_jobs_processed
+     << ",\"pool_jobs_queued\":" << metrics.pool_jobs_queued
+     << ",\"pool_num_threads\":" << metrics.pool_num_threads << "}";
   os << "}";
   return os.str();
 }
@@ -82,7 +90,30 @@ int run_http_server(unsigned short port) {
     g_gateway->stop();
     res.set_content("{\"ok\":true}", "application/json");
   });
+  // Day 18: Reset device from SafeState/Error
+  svr.Post("/reset", [](const httplib::Request& req, httplib::Response& res){
+    (void)req;
+    if (!g_gateway) {
+      res.status = 500;
+      res.set_content("{\"error\":\"Gateway not initialized\"}", "application/json");
+      return;
+    }
+    
+    // Can only reset when gateway is stopped
+    if (g_gateway->device_state() == device::DeviceState::Measuring) {
+      res.status = 400;
+      res.set_content("{\"error\":\"Cannot reset while measuring. Stop gateway first.\"}", "application/json");
+      return;
+    }
 
+    bool success = g_gateway->reset_device();
+    if (success) {
+      res.set_content("{\"ok\":true,\"message\":\"Device reset to Idle\"}", "application/json");
+    } else {
+      res.status = 400;
+      res.set_content("{\"ok\":false,\"message\":\"Device not in SafeState/Error\"}", "application/json");
+    }
+  });
   svr.Get("/metrics", [](const httplib::Request& req, httplib::Response& res){
     (void)req;
     if (!g_gateway) {

@@ -1,0 +1,42 @@
+flowchart TD
+    Start([Gateway Start]) --> Init[Initialize Device<br/>FaultInjectionMode configured]
+    Init --> ProducerLoop{Producer Loop<br/>Running?}
+
+    ProducerLoop -->|Yes| CheckState{Device State?}
+    
+    CheckState -->|Idle| Sleep1[Sleep sample_interval]
+    Sleep1 --> ProducerLoop
+
+    CheckState -->|SafeState/Error| Exit1[Exit Producer Loop]
+    Exit1 --> End([Gateway Stopped])
+
+    CheckState -->|Measuring| ReadSample[device.read_sample]
+
+    ReadSample --> SampleCheck{Sample<br/>Available?}
+
+    SampleCheck -->|Yes| ResetCounter[consecutive_failures = 0]
+    ResetCounter --> PushQueue[Push to Queue]
+    PushQueue --> Sleep2[Sleep sample_interval]
+    Sleep2 --> ProducerLoop
+
+    SampleCheck -->|No Failure| IncrementFailures[consecutive_failures++]
+    IncrementFailures --> LogFailure[Log: Read failed]
+    LogFailure --> ThresholdCheck{Failures >=<br/>Threshold?}
+
+    ThresholdCheck -->|No| Sleep3[Sleep sample_interval]
+    Sleep3 --> ProducerLoop
+
+    ThresholdCheck -->|Yes| LogCircuitBreaker[Log: Circuit breaker triggered<br/>Max failures reached]
+    LogCircuitBreaker --> StopDevice[device.stop]
+    StopDevice --> Exit2[Exit Producer Loop<br/>Policy-driven SafeState]
+    Exit2 --> End
+
+    ProducerLoop -->|No| End
+
+    style Start fill:#90EE90
+    style End fill:#FFB6C1
+    style ThresholdCheck fill:#FFD700
+    style LogCircuitBreaker fill:#FF6347
+    style StopDevice fill:#FF4500
+    style ResetCounter fill:#87CEEB
+    style PushQueue fill:#98FB98

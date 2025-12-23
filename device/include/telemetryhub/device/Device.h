@@ -17,10 +17,32 @@ enum class DeviceState
     SafeState
 };
 
+/**
+ * @brief Fault injection modes for testing robustness
+ * 
+ * Interview Note: Demonstrates systematic fault injection for testing
+ * error handling paths—critical for safety-critical systems.
+ */
+enum class FaultInjectionMode
+{
+    None,                    // No faults injected (default production mode)
+    RandomSensorErrors,      // Intermittent sensor read failures (simulates flaky hardware)
+    CommunicationFailure,    // Serial/bus communication timeouts
+    Both                     // Combined failure modes (worst case)
+};
+
 class Device
 {
 public:
-    explicit Device(int fault_after_samples = 8);
+    /**
+     * @brief Construct device with configurable fault injection
+     * @param fault_after_samples Number of successful samples before triggering fault (0 = disabled)
+     * @param mode Type of faults to inject (default: None for production)
+     * @param error_probability Probability [0.0-1.0] of random errors (for Random modes)
+     */
+    explicit Device(int fault_after_samples = 0, 
+                    FaultInjectionMode mode = FaultInjectionMode::None,
+                    double error_probability = 0.1);
     ~Device();
 
     Device(Device&&) noexcept;
@@ -36,7 +58,24 @@ public:
     DeviceState state() const;
 
     // Returns a new sample if available, otherwise std::nullopt
+    // May return nullopt due to: not measuring, fault threshold, or random errors
     std::optional<TelemetrySample> read_sample();
+
+    /**
+     * @brief Reset device from Error/SafeState back to Idle
+     * 
+     * Interview Note: Explicit recovery mechanism—devices don't auto-recover
+     * from faults without operator intervention (safety requirement).
+     * 
+     * @return true if reset successful, false if already in valid state
+     */
+    bool reset();
+
+    /**
+     * @brief Get count of consecutive failures
+     * Useful for monitoring system health before SafeState
+     */
+    int consecutive_failure_count() const;
 
     // Serial/Command interface
     /**

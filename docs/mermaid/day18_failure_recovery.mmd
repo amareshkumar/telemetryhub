@@ -1,0 +1,69 @@
+sequenceDiagram
+    participant User
+    participant REST as REST API
+    participant Gateway as GatewayCore
+    participant Device
+
+    Note over User,Device: Normal Operation
+    User->>REST: POST /start
+    REST->>Gateway: start()
+    Gateway->>Device: start()
+    Device-->>Gateway: state = Measuring
+    Gateway-->>REST: 200 OK
+    REST-->>User: {"ok":true}
+
+    loop Sample Collection
+        Gateway->>Device: read_sample()
+        alt Success
+            Device-->>Gateway: TelemetrySample
+            Gateway->>Gateway: consecutive_failures = 0
+            Note over Gateway: Reset failure counter
+        else Intermittent Failure (Random)
+            Device-->>Gateway: std::nullopt
+            Gateway->>Gateway: consecutive_failures++
+            Note over Gateway: Track failures (circuit breaker)
+        end
+    end
+
+    Note over User,Device: Failure Threshold Reached
+    Gateway->>Device: read_sample()
+    Device-->>Gateway: std::nullopt
+    Gateway->>Gateway: consecutive_failures >= 5
+    Note over Gateway: Circuit breaker triggered!
+    Gateway->>Device: stop()
+    Device-->>Gateway: state = Idle (policy-driven)
+    Gateway->>Gateway: exit producer_loop()
+
+    User->>REST: GET /status
+    REST->>Gateway: device_state()
+    Gateway-->>REST: Idle (stopped after failures)
+    REST-->>User: {"state":"Idle","metrics":{...}}
+
+    Note over User,Device: Operator Intervention Required
+    User->>REST: POST /reset
+    REST->>Gateway: reset_device()
+    alt Gateway is stopped
+        Gateway->>Device: reset()
+        alt Device in SafeState
+            Device->>Device: state = Idle, clear counters
+            Device-->>Gateway: true
+            Gateway->>Gateway: consecutive_failures = 0
+            Gateway-->>REST: 200 OK
+            REST-->>User: {"ok":true,"message":"Device reset to Idle"}
+        else Device not in SafeState
+            Device-->>Gateway: false
+            Gateway-->>REST: 400 Bad Request
+            REST-->>User: {"ok":false,"message":"Device not in SafeState"}
+        end
+    else Gateway is running
+        Gateway-->>REST: false
+        REST-->>User: {"error":"Cannot reset while measuring"}
+    end
+
+    Note over User,Device: Resume After Recovery
+    User->>REST: POST /start
+    REST->>Gateway: start()
+    Gateway->>Device: start()
+    Device-->>Gateway: state = Measuring
+    Gateway-->>REST: 200 OK
+    REST-->>User: {"ok":true}
