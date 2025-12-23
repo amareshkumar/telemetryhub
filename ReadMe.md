@@ -1,7 +1,10 @@
-[![C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml/badge.svg?branch=main)](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml)
-[![Windows C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/windows-ci.yml/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions/workflows/windows-ci.yml)
-
 # TelemetryHub
+
+[![Build Status](https://github.com/amareshkumar/telemetryhub/workflows/CI/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions)
+[![Release](https://img.shields.io/github/v/release/amareshkumar/telemetryhub)](https://github.com/amareshkumar/telemetryhub/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)](.)
 
 > **Production-ready C++20 telemetry pipeline demonstrating:**  
 > Modern C++ (RAII, move semantics), concurrent programming (9.1M ops/sec),  
@@ -22,15 +25,6 @@ TelemetryHub showcases real-world systems programming patterns used in:
 - 🧪 **Testing Excellence**: Google Test framework with 50+ test cases
 - 📊 **Professionalism**: Architecture docs, API specs, runnable examples
 - 🎯 **SOLID Principles**: DIP, ISP, and DI demonstrated with real code
-
-**TelemetryHub** is a high-performance telemetry data acquisition and distribution system showcasing modern C++20 design patterns, concurrent programming, and production-quality engineering practices.
-
-![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
-![CMake](https://img.shields.io/badge/CMake-3.20+-green)
-![Qt](https://img.shields.io/badge/Qt-6.10-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-green)
-[![codecov](https://codecov.io/gh/amareshkumar/telemetryhub/branch/main/graph/badge.svg)](https://codecov.io/gh/amareshkumar/telemetryhub)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)
 
 ## 🚀 Quick Start
 

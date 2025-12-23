@@ -103,6 +103,21 @@ void GatewayCore::stop()
     TELEMETRYHUB_LOGI("GatewayCore","stopped.");
 }
 
+bool GatewayCore::reset_device()
+{
+    // Can only reset when not running
+    if (running_) {
+        return false;
+    }
+
+    bool success = device_.reset();
+    if (success) {
+        consecutive_read_failures_ = 0;
+        TELEMETRYHUB_LOGI("GatewayCore", "Device reset from SafeState/Error to Idle");
+    }
+    return success;
+}
+
 device::DeviceState GatewayCore::device_state() const
 {
     return device_.state();
@@ -149,7 +164,38 @@ void GatewayCore::producer_loop()
             continue;
         }
 
+        // Attempt to read sample from device
         auto sample_opt = device_.read_sample();
+        
+        if (!sample_opt)
+        {
+            // Track consecutive failures (circuit breaker pattern)
+            consecutive_read_failures_++;
+            
+            TELEMETRYHUB_LOGI("GatewayCore",
+                (std::string("[producer] read failed, consecutive failures: ") +
+                 std::to_string(consecutive_read_failures_)).c_str());
+
+            // Force device to SafeState after threshold (policy enforcement)
+            if (consecutive_read_failures_ >= max_consecutive_failures_)
+            {
+                TELEMETRYHUB_LOGI("GatewayCore",
+                    (std::string("[producer] Max consecutive failures (") +
+                     std::to_string(max_consecutive_failures_) +
+                     ") reached, forcing device to SafeState").c_str());
+                
+                // Stop device—policy-driven SafeState transition
+                device_.stop();
+                break;
+            }
+
+            std::this_thread::sleep_for(sample_interval_);
+            continue;
+        }
+
+        // Successful read—reset failure counter
+        consecutive_read_failures_ = 0;
+        
         if (sample_opt)
         {
             // Blocking push in current queue implementation; treat as accepted
