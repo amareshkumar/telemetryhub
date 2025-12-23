@@ -1,0 +1,49 @@
+stateDiagram-v2
+    [*] --> Idle: Device created
+
+    Idle --> Measuring: start() called
+
+    Measuring --> Idle: stop() called\n(normal shutdown)
+
+    Measuring --> SafeState: Deterministic fault\n(samples_before_fault reached)
+
+    Measuring --> SafeState: Circuit breaker triggered\n(GatewayCore detects N consecutive failures)
+
+    SafeState --> Idle: reset() called\n(explicit operator intervention)
+
+    Measuring --> Measuring: read_sample() success\n(consecutive_failures = 0)
+
+    Measuring --> Measuring: read_sample() fail\n(consecutive_failures++,\nbelow threshold)
+
+    note right of Measuring
+        Random failures tracked:
+        - FaultInjectionMode::RandomSensorErrors
+        - Probability: 0.0 - 1.0
+        - consecutive_failures counter
+    end note
+
+    note right of SafeState
+        Cannot auto-recover:
+        - Requires explicit reset()
+        - Safety-critical design
+        - Operator must diagnose issue
+    end note
+
+    note left of Idle
+        Clean state:
+        - sequence = 0
+        - consecutive_failures = 0
+        - error_counter = 0
+    end note
+
+    state Measuring {
+        [*] --> Reading
+        Reading --> FaultCheck: read_sample() called
+        FaultCheck --> RandomError: should_inject_random_error() == true
+        FaultCheck --> DeterministicCheck: Random check passed
+        DeterministicCheck --> Threshold: sequence >= samples_before_fault
+        DeterministicCheck --> Success: Below threshold
+        Success --> [*]: Return TelemetrySample
+        RandomError --> [*]: Return nullopt\n(consecutive_failures++)
+        Threshold --> [*]: enter_error_state()\n→ SafeState
+    }

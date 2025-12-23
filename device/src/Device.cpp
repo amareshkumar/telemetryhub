@@ -13,11 +13,17 @@ struct Device::Impl
     std::uint32_t sequence = 0;
     std::mt19937_64 rng{std::random_device{}()}; // random number generator
     std::normal_distribution<double> noise_dist{0.0, 0.1}; // Gaussian noise
+    std::uniform_real_distribution<double> error_dist{0.0, 1.0}; // For random errors
 
-    // Fault simulation
-    std::uint32_t samples_before_fault = 8; // e.g., fault after 8 samples/. Default, can be overridden
+    // Fault simulation - deterministic threshold
+    std::uint32_t samples_before_fault = 0; // 0 = disabled, >0 = fault after N samples
     int error_counter = 0;
     int max_errors = 1; // allow only one error before safe state
+
+    // Fault injection - random/intermittent failures
+    FaultInjectionMode fault_mode = FaultInjectionMode::None;
+    double error_probability = 0.1; // Probability of random error (10% default)
+    int consecutive_failures = 0;   // Track consecutive read failures
 
     // Serial communication
     IBus* serial_bus = nullptr;
@@ -49,6 +55,40 @@ struct Device::Impl
     {
         sequence = 0;
         error_counter = 0;
+        consecutive_failures = 0;
+    }
+
+    /**
+     * @brief Check if random error should be injected
+     * 
+     * Interview Note: Probabilistic fault injection—simulates real-world
+     * intermittent failures. Used in chaos engineering and reliability testing.
+     */
+    bool should_inject_random_error()
+    {
+        if (fault_mode == FaultInjectionMode::None)
+            return false;
+
+        if (fault_mode == FaultInjectionMode::CommunicationFailure)
+            return false; // Only affects serial, not sensor reads
+
+        // RandomSensorErrors or Both
+        return error_dist(rng) < error_probability;
+    }
+
+    /**
+     * @brief Check if communication should fail
+     */
+    bool should_inject_comm_failure()
+    {
+        if (fault_mode == FaultInjectionMode::None)
+            return false;
+
+        if (fault_mode == FaultInjectionMode::RandomSensorErrors)
+            return false; // Only affects sensor, not serial
+
+        // CommunicationFailure or Both
+        return error_dist(rng) < error_probability;
     }
 
     std::string process_command(const std::string& cmd)
@@ -112,10 +152,12 @@ struct Device::Impl
     }
 };
 
-Device::Device(int fault_after_samples)
+Device::Device(int fault_after_samples, FaultInjectionMode mode, double error_probability)
     : impl_(std::make_unique<Impl>())
 {
     impl_->samples_before_fault = fault_after_samples;
+    impl_->fault_mode = mode;
+    impl_->error_probability = std::clamp(error_probability, 0.0, 1.0);
 }
 
 Device::~Device() = default;
@@ -152,15 +194,41 @@ std::optional<TelemetrySample> Device::read_sample()
         return std::nullopt;
     }
 
-    // Simulate fault condition
-    if (impl_->sequence >= impl_->samples_before_fault){
-        // simulate device error
+    // Random error injection (simulates intermittent sensor failures)
+    if (impl_->should_inject_random_error()) {
+        impl_->consecutive_failures++;
+        // Don't enter_error_state here—let GatewayCore decide policy
+        return std::nullopt;
+    }
+
+    // Deterministic fault threshold (simulates cumulative wear/degradation)
+    if (impl_->samples_before_fault > 0 && 
+        impl_->sequence >= impl_->samples_before_fault) {
         impl_->enter_error_state();
         return std::nullopt;
     }
 
-    // For demonstration, we generate a new sample on each call
+    // Successful read—reset consecutive failure counter
+    impl_->consecutive_failures = 0;
+
     return impl_->make_sample();
+}
+
+bool Device::reset()
+{
+    // Can only reset from Error or SafeState (explicit recovery)
+    if (impl_->state == DeviceState::Error || 
+        impl_->state == DeviceState::SafeState) {
+        impl_->state = DeviceState::Idle;
+        impl_->reset_sequence();
+        return true;
+    }
+    return false; // Already in valid state
+}
+
+int Device::consecutive_failure_count() const
+{
+    return impl_->consecutive_failures;
 }
 
 void Device::set_serial_bus(IBus* bus)
@@ -172,6 +240,11 @@ std::optional<std::string> Device::process_serial_commands()
 {
     if (!impl_->serial_bus) {
         return std::nullopt;
+    }
+
+    // Communication failure injection (simulates bus timeout/garbled data)
+    if (impl_->should_inject_comm_failure()) {
+        return std::nullopt; // Simulate timeout/no response
     }
 
     std::vector<std::uint8_t> buffer;
