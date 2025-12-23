@@ -26,15 +26,6 @@ TelemetryHub showcases real-world systems programming patterns used in:
 - 📊 **Professionalism**: Architecture docs, API specs, runnable examples
 - 🎯 **SOLID Principles**: DIP, ISP, and DI demonstrated with real code
 
-**TelemetryHub** is a high-performance telemetry data acquisition and distribution system showcasing modern C++20 design patterns, concurrent programming, and production-quality engineering practices.
-
-![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
-![CMake](https://img.shields.io/badge/CMake-3.20+-green)
-![Qt](https://img.shields.io/badge/Qt-6.10-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-green)
-[![codecov](https://codecov.io/gh/amareshkumar/telemetryhub/branch/main/graph/badge.svg)](https://codecov.io/gh/amareshkumar/telemetryhub)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)
-
 ## 🚀 Quick Start
 
 To get started with TelemetryHub:
