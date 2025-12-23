@@ -12,7 +12,8 @@ namespace telemetryhub::gateway {
 
 GatewayCore::GatewayCore()
     : device_{}, // default Device (e.g. fault after 8 samples)
-      start_time_(std::chrono::steady_clock::now())
+      start_time_(std::chrono::steady_clock::now()),
+      thread_pool_(std::make_unique<ThreadPool>(4))  // 4 worker threads for processing
 {
 }
 
@@ -34,6 +35,15 @@ GatewayCore::Metrics GatewayCore::get_metrics() const
     auto now = std::chrono::steady_clock::now();
     auto uptime = std::chrono::duration_cast<std::chrono::seconds>(now - start_time_);
     m.uptime_seconds = static_cast<uint64_t>(uptime.count());
+    
+    // Thread pool metrics (Day 17)
+    if (thread_pool_) {
+        auto pool_metrics = thread_pool_->get_metrics();
+        m.pool_jobs_processed = pool_metrics.jobs_processed;
+        m.pool_jobs_queued = pool_metrics.jobs_queued;
+        m.pool_avg_processing_ms = pool_metrics.avg_processing_ms;
+        m.pool_num_threads = pool_metrics.num_threads;
+    }
     
     return m;
 }
@@ -182,6 +192,11 @@ void GatewayCore::consumer_loop()
             latest_ = *sample_opt;
         }
 
+        // Submit processing to thread pool (Day 17)
+        if (thread_pool_) {
+            thread_pool_->submit(&GatewayCore::process_sample_with_metrics, this, *sample_opt);
+        }
+
         // std::cout << "[consumer] got sample #" << sample_opt->sequence_id
         //           << " value=" << sample_opt->value
         //           << " " << sample_opt->unit << "\n";
@@ -193,6 +208,25 @@ void GatewayCore::consumer_loop()
 
     // std::cout << "[GatewayCore::consumer] exiting\n";
     TELEMETRYHUB_LOGI("GatewayCore","[consumer] exiting");
+}
+
+void GatewayCore::process_sample_with_metrics(const device::TelemetrySample& sample)
+{
+    // Example derived metric: compute moving average, variance, etc.
+    // This demonstrates CPU-bound work that benefits from parallel processing
+    
+    // Simulate some processing work
+    // In production, this would be:
+    // - Statistical calculations (moving average, stddev, percentiles)
+    // - Data transformation (unit conversions, normalization)
+    // - Anomaly detection (outlier detection, trend analysis)
+    // - Aggregation (windowed metrics, rollups)
+    
+    double derived_value = sample.value * 1.5;  // Example: apply calibration factor
+    
+    TELEMETRYHUB_LOGI("GatewayCore",
+        (std::string("[thread_pool] processed sample #") + std::to_string(sample.sequence_id) +
+         " derived_value=" + std::to_string(derived_value)).c_str());
 }
 
 }   // namespace telemetryhub::gateway 
