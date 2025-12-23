@@ -7,19 +7,18 @@
 - An optional **Qt desktop app** that monitors and controls the device.
 - Backed by **C++20**, RAII, pImpl, CMake/CTest, threads, state machines, and basic secure coding practices.
 
-The project is designed both as a **learning sandbox** and a **portfolio piece** that mirrors real work:
-embedded devices, networking/REST, performance, testing, and clean architecture.
+The project demonstrates production-grade patterns for:
+embedded devices, networking/REST, performance optimization, testing, and clean architecture.
 
 ---
 
 ## Goals
 
-- Practice **modern C++** (RAII, move semantics, pImpl, threading).
+- Implement **modern C++** (RAII, move semantics, pImpl, threading).
 - Model **embedded / IoT** patterns: state machines, safe-state logic, simulated UART/serial.
 - Implement **gateway & REST** concepts: producer–consumer queues, local API, optional cloud client.
 - Build a **Qt desktop UI** for monitoring/controlling the simulated device.
-- Demonstrate **tooling**: CMake, CTest, unit tests, profiling, and CI skeletons.
-- Create a coherent **project story** you can use in interviews.
+- Demonstrate **tooling**: CMake, CTest, unit tests, profiling, and CI integration.
 
 ---
 
@@ -331,50 +330,45 @@ You don’t have to do everything at once; each step is meaningful on its own.
 
 ---
 
-## How This Maps to Interview Topics
+## Technical Highlights
 
-TelemetryHub is intentionally aligned with common interview themes:
+TelemetryHub demonstrates modern C++ and systems programming patterns:
 
 * **Modern C++**
-
-  * RAII (`FileHandle`, resource wrappers).
-  * Move semantics, ownership patterns.
-  * pImpl, ABI/API stability (`Device`).
+  * RAII (`FileHandle`, resource wrappers)
+  * Move semantics, ownership patterns
+  * pImpl, ABI/API stability (`Device`)
 
 * **Concurrency**
-
-  * Producer–consumer with `std::thread`, `std::mutex`, `std::condition_variable`.
-  * Thread pool extensions in the gateway.
-  * Discussion around data races, deadlocks, safe shutdown.
+  * Producer–consumer with `std::thread`, `std::mutex`, `std::condition_variable`
+  * Thread pool extensions in the gateway
+  * Thread-safe design patterns
 
 * **Embedded / IoT**
-
-  * State machines and safe-state logic.
-  * Simulated UART driver and commands.
-  * Config + error handling patterns familiar from industrial / medical devices.
+  * State machines and safe-state logic
+  * Simulated UART driver and device commands
+  * Configuration and error handling patterns
 
 * **Networking & REST**
-
-  * Gateway as a small service exposing HTTP endpoints.
-  * Cloud client abstractions for pushing telemetry.
-  * Input validation and basic security measures.
+  * Gateway service with HTTP endpoints
+  * Cloud client abstractions for telemetry
+  * Input validation and security measures
 
 * **Qt / UI**
-
-  * Separation of UI and backend logic.
-  * Asynchronous updates and non-blocking UI patterns.
-  * Simple graphs/labels reflecting real-time data.
+  * Separation of UI and backend logic
+  * Asynchronous updates and non-blocking patterns
+  * Real-time data visualization
 
 * **Tooling & Quality**
-
-  * CMake/CTest project structure.
-  * Unit tests and testability via interfaces.
-  * Profiling and micro-optimisation habits.
-  * CI-friendly build/test layout.
+  * CMake/CTest project structure
+  * Unit tests with Google Test framework
+  * CI/CD integration with sanitizers
+  * Comprehensive documentation
 
 ---
 
 ## Status
 
-> This project is under active development as a **personal learning and interview-prep tool**.
-> Features and structure may change as new ideas are explored or specific interview topics are targeted.
+> This project is under active development. Features and architecture may evolve
+> as new patterns and optimizations are explored.
+

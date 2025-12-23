@@ -194,9 +194,9 @@ telemetryhub/
 ├─ cmake/
 │  └─ ConfigWarnings.cmake           # optional warnings, flags, etc.
 ├─ docs/
-│  ├─ architecture_week1.md
+│  ├─ architecture.md
 │  ├─ system_overview.md
-│  └─ interview_mapping.md
+│  └─ configuration.md
 ├─ device/
 │  ├─ CMakeLists.txt
 │  ├─ include/telemetryhub/device/
