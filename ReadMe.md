@@ -1,7 +1,10 @@
-[![C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml/badge.svg?branch=main)](https://github.com/amareshkumar/telemetryhub/actions/workflows/cpp-ci.yml)
-[![Windows C++ CI](https://github.com/amareshkumar/telemetryhub/actions/workflows/windows-ci.yml/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions/workflows/windows-ci.yml)
-
 # TelemetryHub
+
+[![Build Status](https://github.com/amareshkumar/telemetryhub/workflows/CI/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions)
+[![Release](https://img.shields.io/github/v/release/amareshkumar/telemetryhub)](https://github.com/amareshkumar/telemetryhub/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)](.)
 
 > **Production-ready C++20 telemetry pipeline demonstrating:**  
 > Modern C++ (RAII, move semantics), concurrent programming (9.1M ops/sec),  
