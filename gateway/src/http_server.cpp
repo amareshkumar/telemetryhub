@@ -97,7 +97,13 @@ int run_http_server(unsigned short port) {
     os << "\"samples_dropped\":" << metrics.samples_dropped << ",";
     os << "\"queue_depth\":" << metrics.queue_depth << ",";
     os << "\"latency_p99_ms\":" << metrics.latency_p99_ms << ",";
-    os << "\"uptime_seconds\":" << metrics.uptime_seconds;
+    os << "\"uptime_seconds\":" << metrics.uptime_seconds << ",";
+    os << "\"thread_pool\":{";
+    os << "\"jobs_processed\":" << metrics.pool_jobs_processed << ",";
+    os << "\"jobs_queued\":" << metrics.pool_jobs_queued << ",";
+    os << "\"avg_processing_ms\":" << metrics.pool_avg_processing_ms << ",";
+    os << "\"num_threads\":" << metrics.pool_num_threads;
+    os << "}";
     os << "}";
     res.set_content(os.str(), "application/json");
   });
