@@ -8,6 +8,7 @@
 #include "telemetryhub/device/Device.h"
 #include "telemetryhub/gateway/TelemetryQueue.h"
 #include "telemetryhub/gateway/ICloudClient.h"
+#include "telemetryhub/gateway/ThreadPool.h"
 
 namespace telemetryhub::gateway {
 
@@ -41,12 +42,19 @@ public:
         size_t queue_depth{0};
         double latency_p99_ms{0.0};
         uint64_t uptime_seconds{0};
+        
+        // Thread pool metrics
+        uint64_t pool_jobs_processed{0};
+        uint64_t pool_jobs_queued{0};
+        double pool_avg_processing_ms{0.0};
+        size_t pool_num_threads{0};
     };
     Metrics get_metrics() const;
 
 private:
     void producer_loop();
     void consumer_loop();
+    void process_sample_with_metrics(const device::TelemetrySample& sample);
 
     mutable std::mutex latest_mutex_;
     std::optional<device::TelemetrySample> latest_;
@@ -68,6 +76,9 @@ private:
     // Metrics tracking
     std::atomic<uint64_t> metrics_samples_processed_{0};
     std::atomic<uint64_t> metrics_samples_dropped_{0};
+    
+    // Thread pool for processing (Day 17)
+    std::unique_ptr<ThreadPool> thread_pool_;
     std::chrono::steady_clock::time_point start_time_;
 };
 
