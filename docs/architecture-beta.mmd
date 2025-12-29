@@ -1,0 +1,46 @@
+// [MermaidChart: 75332987-71bf-4f6a-befd-544574ff1f31]
+// [MermaidChart: c031e253-ebae-4b3d-9b57-28f13abd48c2]
+// [MermaidChart: c3978952-9b0c-47ff-bcad-fdd5caa590f3]
+architecture-beta
+    group devices(cloud)[IoT Device Layer]
+    group ingestion(server)[TelemetryHub Ingestion]
+    group broker(database)[Message Broker]
+    group processing(server)[TelemetryTaskProcessor]
+    group storage(disk)[Data Storage]
+
+    service sensor1(disk)[Temperature Sensor] in devices
+    service sensor2(disk)[Pressure Sensor] in devices
+    service sensor3(disk)[Humidity Sensor] in devices
+    
+    service device_layer(server)[Device Driver] in ingestion
+    service gateway(internet)[Gateway REST API] in ingestion
+    service queue(database)[TelemetryQueue] in ingestion
+    
+    service redis(database)[Redis] in broker
+    
+    service worker1(server)[Worker 1] in processing
+    service worker2(server)[Worker 2] in processing
+    service worker3(server)[Worker N] in processing
+    
+    service postgres(database)[PostgreSQL] in storage
+    service metrics(internet)[Prometheus] in storage
+
+    sensor1:R --> L:device_layer
+    sensor2:R --> L:device_layer
+    sensor3:R --> L:device_layer
+    
+    device_layer:R --> L:queue
+    queue:R --> L:gateway
+    gateway:R --> L:redis
+    
+    redis:R --> L:worker1
+    redis:R --> L:worker2
+    redis:R --> L:worker3
+    
+    worker1:R --> L:postgres
+    worker2:R --> L:postgres
+    worker3:R --> L:postgres
+    
+    worker1:B --> T:metrics
+    worker2:B --> T:metrics
+    worker3:B --> T:metrics
