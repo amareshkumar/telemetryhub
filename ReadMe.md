@@ -37,6 +37,30 @@ cd telemetryhub
 cmake --preset linux-ninja-release && cmake --build --preset linux-ninja-release
 ```
 
+### Build Options
+
+**Standard Build (CMake + MSBuild/Ninja):**
+```powershell
+# Windows with Visual Studio
+cmake --preset vs2026-release
+cmake --build build_vs26 --config Release -j8
+
+# Linux with Ninja
+cmake --preset linux-ninja-release
+cmake --build --preset linux-ninja-release
+```
+
+**FASTBuild (Distributed Compilation - 10× faster):**
+```powershell
+# Configure with FASTBuild enabled
+.\configure_fbuild.ps1 -EnableFastBuild
+
+# Build with distribution and caching
+fbuild -config build_vs26\fbuild.bff -dist -cache
+
+# See docs/fastbuild_guide.md for setup instructions
+```
+
 ### Run the Gateway App: 
    ```bash
    ./build/gateway/gateway_app --config docs/config.example.ini

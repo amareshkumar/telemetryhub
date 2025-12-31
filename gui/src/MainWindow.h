@@ -11,6 +11,7 @@ class RestClient;
 class QChartView;
 class QLineSeries;
 class QValueAxis;
+class QTableWidget;
 
 namespace telemetryhub::gateway { class GatewayCore; }
 
@@ -30,6 +31,8 @@ private slots:
 private:
     void setupChart();
     void updateChart();
+    void setupMetricsTable();
+    void updateMetrics(const QJsonObject& metrics);
 
     QLabel* stateLabel_ = nullptr;
     QLabel* valueLabel_ = nullptr;
@@ -45,6 +48,9 @@ private:
     QValueAxis* axisY_ = nullptr;
     std::deque<double> history_;  // Last 60 samples
     int sampleCount_ = 0;
+
+    // Metrics dashboard (Level 1 enhancement)
+    QTableWidget* metricsTable_ = nullptr;
 
     // Later: either call REST or a thin client interface
 };

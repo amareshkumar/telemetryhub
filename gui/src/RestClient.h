@@ -16,6 +16,7 @@ public:
 
     // Callbacks receive (success payload, error string). For getStatus, success is JSON object.
     void getStatus(std::function<void(const QJsonObject&, const QString&)> onDone);
+    void getMetrics(std::function<void(const QJsonObject&, const QString&)> onDone);
     void sendStart(std::function<void(bool, const QString&)> onDone);
     void sendStop(std::function<void(bool, const QString&)> onDone);
 
