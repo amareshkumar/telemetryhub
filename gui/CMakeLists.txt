@@ -7,7 +7,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Enforce minimum Qt version to avoid tool mismatch
-find_package(Qt6 6.10.1 REQUIRED COMPONENTS Widgets Network)
+find_package(Qt6 6.10.1 REQUIRED COMPONENTS Widgets Network Charts)
 
 add_executable(gui_app
     src/main_gui.cpp
@@ -18,5 +18,5 @@ add_executable(gui_app
 )
 
 target_link_libraries(gui_app
-    PRIVATE Qt6::Widgets Qt6::Network
+    PRIVATE Qt6::Widgets Qt6::Network Qt6::Charts
 )
