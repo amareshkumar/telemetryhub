@@ -13,6 +13,12 @@
 #include <QJsonValue>
 #include <QPointer>
 
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QChart>
+#include <QtCharts/QValueAxis>
+#include <algorithm>
+
 static QUrl defaultApiBase() {
     const auto env = qEnvironmentVariable("THUB_API_BASE");
     if (!env.isEmpty()) return QUrl(env);
@@ -44,6 +50,11 @@ MainWindow::MainWindow(QWidget* parent)
     v->addLayout(stateRow);
     v->addLayout(valueRow);
     v->addLayout(buttons);
+    
+    // Setup real-time chart (Level 1 enhancement)
+    setupChart();
+    v->addWidget(chartView_);
+    
     v->addStretch(1);
 
     setCentralWidget(central);
@@ -65,6 +76,67 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::setupChart() {
+    series_ = new QLineSeries(this);
+    series_->setName("Telemetry Value");
+    
+    QChart* chart = new QChart();
+    chart->addSeries(series_);
+    chart->setTitle("Real-Time Telemetry (Last 60 Samples)");
+    chart->setAnimationOptions(QChart::NoAnimation);  // Performance: no animations
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
+    
+    // X axis: Sample index
+    axisX_ = new QValueAxis();
+    axisX_->setTitleText("Sample #");
+    axisX_->setRange(0, 60);
+    axisX_->setLabelFormat("%d");
+    
+    // Y axis: Telemetry value (auto-scale)
+    axisY_ = new QValueAxis();
+    axisY_->setTitleText("Value (arb.units)");
+    axisY_->setRange(40, 45);  // Initial range, will auto-scale
+    axisY_->setLabelFormat("%.2f");
+    
+    chart->addAxis(axisX_, Qt::AlignBottom);
+    chart->addAxis(axisY_, Qt::AlignLeft);
+    series_->attachAxis(axisX_);
+    series_->attachAxis(axisY_);
+    
+    chartView_ = new QChartView(chart, this);
+    chartView_->setRenderHint(QPainter::Antialiasing);
+    chartView_->setMinimumHeight(300);
+}
+
+void MainWindow::updateChart() {
+    if (history_.empty()) return;
+    
+    // Clear and repopulate series
+    series_->clear();
+    
+    const int startIdx = std::max(0, sampleCount_ - 60);
+    for (size_t i = 0; i < history_.size(); ++i) {
+        series_->append(startIdx + i, history_[i]);
+    }
+    
+    // Auto-scale Y axis based on current data
+    const auto [minIt, maxIt] = std::minmax_element(history_.begin(), history_.end());
+    if (minIt != history_.end() && maxIt != history_.end()) {
+        const double minVal = *minIt;
+        const double maxVal = *maxIt;
+        const double padding = (maxVal - minVal) * 0.1;  // 10% padding
+        axisY_->setRange(minVal - padding, maxVal + padding);
+    }
+    
+    // Update X axis range to show last 60 samples
+    if (sampleCount_ > 60) {
+        axisX_->setRange(sampleCount_ - 60, sampleCount_);
+    } else {
+        axisX_->setRange(0, 60);
+    }
+}
 
 void MainWindow::onStartClicked() {
     startButton_->setEnabled(false);
@@ -136,7 +208,17 @@ void MainWindow::onRefresh() {
         }
         const auto latest = json.value("latest_sample");
         if (latest.isObject()) {
-            self->valueLabel_->setText(QString("Latest: ") + sampleToText(latest.toObject()));
+            const auto obj = latest.toObject();
+            self->valueLabel_->setText(QString("Latest: ") + sampleToText(obj));
+            
+            // Update chart with new sample value
+            const double value = obj.value("value").toDouble();
+            self->history_.push_back(value);
+            if (self->history_.size() > 60) {
+                self->history_.pop_front();
+            }
+            self->sampleCount_++;
+            self->updateChart();
         } else {
             self->valueLabel_->setText("Latest: (none)");
         }
