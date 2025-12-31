@@ -1,0 +1,298 @@
+# Docker Compose for TelemetryHub + TelemetryTaskProcessor Integration
+#
+# This setup demonstrates end-to-end telemetry pipeline:
+# 1. TelemetryHub ingests sensor data
+# 2. Gateway publishes to Redis
+# 3. TelemetryTaskProcessor workers consume and process
+# 4. Results stored in PostgreSQL
+# 5. Metrics exported to Prometheus
+# 6. Visualized in Grafana
+#
+# Usage:
+#   docker compose up -d
+#   docker compose ps
+#   docker compose logs -f telemetryhub
+#   docker compose down
+
+version: '3.8'
+
+services:
+  # Redis - Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: telemetry_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - telemetry_network
+
+  # PostgreSQL - Time-series Data Storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: telemetry_postgres
+    environment:
+      POSTGRES_DB: telemetry
+      POSTGRES_USER: telemetry_user
+      POSTGRES_PASSWORD: telemetry_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U telemetry_user"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - telemetry_network
+
+  # TelemetryHub - Data Ingestion
+  telemetryhub:
+    build:
+      context: ./telemetryhub
+      dockerfile: Dockerfile
+    container_name: telemetry_ingestion
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_QUEUE_NAME=telemetry:tasks
+      - SAMPLING_INTERVAL_MS=100
+      - LOG_LEVEL=info
+      - ENABLE_REST_API=true
+      - REST_API_PORT=8080
+    ports:
+      - "8080:8080"  # REST API
+      - "9091:9091"  # Prometheus metrics
+    volumes:
+      - ./telemetryhub/config:/app/config
+      - telemetry_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - telemetry_network
+    restart: unless-stopped
+
+  # TelemetryTaskProcessor - Async Processing (Replica 1)
+  telemetry_processor_1:
+    build:
+      context: ./TelemetryTaskProcessor
+      dockerfile: Dockerfile
+    container_name: telemetry_processor_1
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_QUEUE_NAME=telemetry:tasks
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=telemetry
+      - POSTGRES_USER=telemetry_user
+      - POSTGRES_PASSWORD=telemetry_pass
+      - NUM_WORKERS=8
+      - LOG_LEVEL=info
+      - WORKER_ID=processor_1
+    ports:
+      - "9092:9092"  # Prometheus metrics
+    volumes:
+      - ./TelemetryTaskProcessor/config:/app/config
+      - processor_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9092/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - telemetry_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+  # TelemetryTaskProcessor - Async Processing (Replica 2)
+  telemetry_processor_2:
+    build:
+      context: ./TelemetryTaskProcessor
+      dockerfile: Dockerfile
+    container_name: telemetry_processor_2
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_QUEUE_NAME=telemetry:tasks
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=telemetry
+      - POSTGRES_USER=telemetry_user
+      - POSTGRES_PASSWORD=telemetry_pass
+      - NUM_WORKERS=8
+      - LOG_LEVEL=info
+      - WORKER_ID=processor_2
+    ports:
+      - "9093:9092"  # Prometheus metrics (mapped to different host port)
+    volumes:
+      - ./TelemetryTaskProcessor/config:/app/config
+      - processor_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9092/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - telemetry_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: telemetry_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - telemetry_network
+    restart: unless-stopped
+
+  # Grafana - Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: telemetry_grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - telemetry_network
+    restart: unless-stopped
+
+  # Redis Commander - Redis Web UI (Development only)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: telemetry_redis_ui
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - telemetry_network
+    profiles:
+      - dev  # Only start with: docker compose --profile dev up
+
+  # PgAdmin - PostgreSQL Web UI (Development only)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: telemetry_pgadmin
+    depends_on:
+      - postgres
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@telemetry.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_LISTEN_PORT=5050
+    ports:
+      - "5050:5050"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - telemetry_network
+    profiles:
+      - dev  # Only start with: docker compose --profile dev up
+
+networks:
+  telemetry_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  telemetry_logs:
+    driver: local
+  processor_logs:
+    driver: local
+
+# Service Health Summary:
+# - Redis: localhost:6379 (Message broker)
+# - PostgreSQL: localhost:5432 (Time-series storage)
+# - TelemetryHub API: localhost:8080 (Data ingestion)
+# - TelemetryHub Metrics: localhost:9091 (Prometheus)
+# - TaskProcessor 1 Metrics: localhost:9092 (Prometheus)
+# - TaskProcessor 2 Metrics: localhost:9093 (Prometheus)
+# - Prometheus: localhost:9090 (Metrics dashboard)
+# - Grafana: localhost:3000 (Visualization, admin/admin)
+# - Redis Commander: localhost:8081 (Dev only, --profile dev)
+# - PgAdmin: localhost:5050 (Dev only, --profile dev, admin@telemetry.local/admin)
+
+# Quick Commands:
+# - Start all services:        docker compose up -d
+# - Start with dev tools:      docker compose --profile dev up -d
+# - View logs (all):           docker compose logs -f
+# - View logs (specific):      docker compose logs -f telemetryhub
+# - Check status:              docker compose ps
+# - Stop all services:         docker compose down
+# - Stop and remove volumes:   docker compose down -v
+# - Restart service:           docker compose restart telemetryhub
+# - Scale processors:          docker compose up -d --scale telemetry_processor_1=3
+# - View resource usage:       docker stats
