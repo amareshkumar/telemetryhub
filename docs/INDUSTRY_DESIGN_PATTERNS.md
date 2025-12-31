@@ -48,9 +48,27 @@ This document catalogs **industry-standard patterns** used in TelemetryHub that 
 Classic concurrency pattern where producers generate work, consumers process it, decoupled via a queue.
 
 **Where We Use It:**
-```
-GatewayCore:
-  Producer Thread ──▶ TelemetryQueue ──▶ Consumer Thread ──▶ ThreadPool
+
+```mermaid
+flowchart LR
+    P["🔵 Producer Thread<br/>(Device I/O)<br/>100ms interval"]
+    Q["📦 TelemetryQueue<br/>(Bounded: 1000)<br/>mutex + cv"]
+    C["🟣 Consumer Thread<br/>(Dispatcher)"]
+    TP["⚙️ ThreadPool<br/>(4 Workers)"]
+    
+    P -->|"push()<br/>std::move"| Q
+    Q -->|"pop()<br/>blocking"| C
+    C -->|"submit(job)"| TP
+    
+    classDef producerStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef queueStyle fill:#fce4ec,stroke:#c2185b,stroke-width:3px,color:#000
+    classDef consumerStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef poolStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    
+    class P producerStyle
+    class Q queueStyle
+    class C consumerStyle
+    class TP poolStyle
 ```
 
 **Code Reference:**
@@ -102,12 +120,36 @@ void GatewayCore::consumer_loop() {
 Pre-created worker threads that execute submitted jobs from a queue. Amortizes thread creation cost.
 
 **Where We Use It:**
-```
-ThreadPool (4 workers):
-  Job Queue ──▶ Worker[0]  }
-           ──▶ Worker[1]  } Parallel execution
-           ──▶ Worker[2]  }
-           ──▶ Worker[3]  }
+
+```mermaid
+flowchart TB
+    subgraph TP["⚙️ ThreadPool (4 Workers)"]
+        direction TB
+        JQ["📋 Job Queue<br/>(std::queue)<br/>mutex protected"]
+        
+        subgraph Workers["Worker Threads (Pre-Created)"]
+            direction LR
+            W1["Worker 0<br/>🛌 cv.wait()"]
+            W2["Worker 1<br/>🛌 cv.wait()"]
+            W3["Worker 2<br/>🛌 cv.wait()"]
+            W4["Worker 3<br/>🛌 cv.wait()"]
+        end
+        
+        JQ -->|"Wake one<br/>notify_one()"| Workers
+    end
+    
+    Submit["submit(job)<br/>From consumer"] -->|"lock + push"| JQ
+    Workers -->|"Execute<br/>job()"| Metrics["📊 Atomic Metrics<br/>jobs_processed++<br/>total_time += duration"]
+    
+    classDef queueStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef workerStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef submitStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef metricStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    
+    class JQ queueStyle
+    class W1,W2,W3,W4 workerStyle
+    class Submit submitStyle
+    class Metrics metricStyle
 ```
 
 **Code Reference:**
@@ -184,6 +226,42 @@ With thread pool: 0 overhead (threads created once at startup)
 
 **What It Is:**
 Using atomic operations (CPU instructions) instead of mutexes for synchronization. Enables concurrent access without blocking.
+
+```mermaid
+flowchart LR
+    subgraph Writers["✍️ Writer Threads (4 workers)"]
+        W1["Worker 1\nfetch_add(1)"] 
+        W2["Worker 2\nfetch_add(1)"]
+        W3["Worker 3\nfetch_add(1)"]
+        W4["Worker 4\nfetch_add(1)"]
+    end
+    
+    subgraph Atomic["⚛️ Atomic Counter\nstd::atomic<uint64_t>"]
+        Counter["jobs_processed_\n(Lock-Free)"]
+    end
+    
+    subgraph Readers["👁️ Reader Thread (HTTP)"]
+        R1["GET /metrics\nload()"]
+    end
+    
+    W1 -->|"~10ns\nNo blocking"| Counter
+    W2 -->|"~10ns\nNo blocking"| Counter
+    W3 -->|"~10ns\nNo blocking"| Counter
+    W4 -->|"~10ns\nNo blocking"| Counter
+    Counter -->|"~10ns\nNo waiting"| R1
+    
+    Comparison["🐌 Mutex: ~100ns (contended)\nvs\n⚡ Atomic: ~10ns\n= 10× faster!"]
+    
+    classDef writerStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef atomicStyle fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
+    classDef readerStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef compareStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    
+    class W1,W2,W3,W4 writerStyle
+    class Counter atomicStyle
+    class R1 readerStyle
+    class Comparison compareStyle
+```
 
 **Where We Use It:**
 - Metrics counters (`samples_processed_`, `jobs_processed_`)
@@ -307,14 +385,56 @@ private:
 ```
 
 **Circuit States:**
-```
-1. Closed (Normal): All operations proceed
-2. Open (Tripped): Operations blocked, return immediately
-3. Half-Open (Testing): Limited operations to test recovery
 
-TelemetryHub: Closed ──(3 failures)──▶ Open (SafeState)
-                 ▲                         │
-                 └────(manual reset)───────┘
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+    
+    Closed: 🟢 Closed (Normal Operation)
+    Closed: All device reads proceed
+    Closed: consecutive_failures = 0
+    
+    Open: 🔴 Open (Circuit Tripped)
+    Open: Device reads blocked
+    Open: SafeState entered
+    Open: Returns error immediately
+    
+    HalfOpen: 🟡 Half-Open (Testing)
+    HalfOpen: Limited test reads
+    HalfOpen: Checking recovery
+    
+    Closed --> Open: 3 consecutive failures\nCircuit breaker trips
+    Open --> HalfOpen: Manual reset()\nOperator intervention
+    HalfOpen --> Closed: Test read succeeds\nService recovered
+    HalfOpen --> Open: Test read fails\nStill broken
+    
+    note right of Closed
+        Normal state: Device working
+        Every failure increments counter
+        Success resets counter to 0
+    end note
+    
+    note right of Open
+        Fail-fast mode:
+        Don't hammer broken device
+        Prevents cascade failures
+        Saves CPU (no tight retry loop)
+    end note
+    
+    note right of HalfOpen
+        TelemetryHub simplification:
+        We skip Half-Open state.
+        Manual reset goes directly
+        from Open → Closed
+    end note
+    
+    classDef closedStyle fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
+    classDef openStyle fill:#f44336,stroke:#c62828,stroke-width:3px,color:#fff
+    classDef halfOpenStyle fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#fff
+    
+    class Closed closedStyle
+    class Open openStyle
+    class HalfOpen halfOpenStyle
 ```
 
 **Why It Matters (Interview):**
@@ -351,6 +471,50 @@ Queue with fixed capacity that implements backpressure when producers overwhelm 
 - [`gateway/src/TelemetryQueue.cpp`](../gateway/src/TelemetryQueue.cpp) - `push()` with overflow handling
 
 **Key Implementation Details:**
+
+```mermaid
+flowchart TB
+    Producer["🔵 Producer Thread\n(10Hz sampling)"]
+    
+    subgraph Queue["📦 Bounded Queue (max 1000)"]
+        direction TB
+        Q1["Sample 1 (oldest)"]
+        Q2["Sample 2"]
+        Q3["..."]
+        Q999["Sample 999"]
+        Q1000["Sample 1000 (newest)"]
+    end
+    
+    Check{"Queue size\n>= max_size?"}
+    Drop["⚠️ DROP OLDEST\nqueue.pop()\nsamples_dropped++"]
+    Push["✅ Push new sample\nqueue.emplace()"]
+    Consumer["🟽 Consumer Thread\n(ThreadPool)"]
+    
+    Producer --> Check
+    Check -->|"YES\n(Backpressure!)"| Drop
+    Check -->|"NO"| Push
+    Drop --> Push
+    Push --> Queue
+    Queue --> Consumer
+    
+    Memory["📊 Memory: Bounded!\n1000 samples × 64 bytes\n= 64KB (constant)"]
+    Alternative["🔄 Alternative Strategies:\n• Drop Newest (audit logs)\n• Block Producer (guaranteed delivery)\n• Return HTTP 503 (web APIs)"]
+    
+    classDef producerStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef queueStyle fill:#fce4ec,stroke:#c2185b,stroke-width:3px,color:#000
+    classDef dropStyle fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    classDef pushStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef consumerStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef infoStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    
+    class Producer producerStyle
+    class Queue,Q1,Q2,Q3,Q999,Q1000 queueStyle
+    class Drop dropStyle
+    class Push pushStyle
+    class Consumer consumerStyle
+    class Memory,Alternative infoStyle
+```
+
 ```cpp
 class TelemetryQueue {
 public:

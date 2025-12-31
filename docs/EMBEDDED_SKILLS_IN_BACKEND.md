@@ -129,6 +129,59 @@ bool SerialPortSim::read(std::vector<std::uint8_t>& out, std::size_t max_len) {
 **File:** [`device/src/Device.cpp`](../device/src/Device.cpp)
 
 ```cpp
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Device Created
+    
+    Idle --> Measuring: start()<br/>Begin sampling
+    
+    Measuring --> Measuring: read_sample()<br/>Normal operation
+    Measuring --> Error: Transient failure<br/>(retry logic)
+    Measuring --> SafeState: N consecutive failures<br/>Circuit breaker trips
+    
+    Error --> Measuring: Retry success<br/>Auto-recovery
+    Error --> SafeState: Max retries exceeded
+    
+    SafeState --> Idle: reset()<br/>Manual intervention
+    Idle --> [*]: Device destroyed
+    
+    note right of Measuring
+        Normal Operation:
+        - read_sample() every 100ms
+        - Produce telemetry
+        - Monitor error count
+    end note
+    
+    note right of SafeState
+        Safety State (Fail-Safe):
+        - Like watchdog timeout
+        - Stop all sampling
+        - Requires manual reset()
+        - Prevents cascade failures
+    end note
+    
+    note left of Error
+        Transient Error:
+        - Recoverable failure
+        - Retry with backoff
+        - Count consecutive failures
+        - Threshold configurable
+    end note
+    
+    classDef activeState fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
+    classDef errorState fill:#f44336,stroke:#c62828,stroke-width:3px,color:#fff
+    classDef safeState fill:#ff9800,stroke:#e65100,stroke-width:3px,color:#000
+    classDef idleState fill:#9e9e9e,stroke:#424242,stroke-width:2px,color:#fff
+    
+    class Measuring activeState
+    class Error errorState
+    class SafeState safeState
+    class Idle idleState
+```
+
+**Code Implementation:**
+
+```cpp
 enum class DeviceState {
     Idle,        // Initial state, not measuring
     Measuring,   // Normal operation
@@ -194,20 +247,40 @@ void GatewayCore::producer_loop() {
 ```
 
 **State Diagram:**
-```
-┌──────┐  start()   ┌──────────┐  N failures   ┌──────────┐
-│ Idle │──────────→ │Measuring │─────────────→ │SafeState │
-└───▲──┘            └────┬─────┘               └─────┬────┘
-    │                    │                           │
-    │                    │ stop()                    │
-    │                    ▼                           │
-    │                ┌───────┐                       │
-    │                │ Idle  │                       │
-    │                └───────┘                       │
-    │                                                │
-    │                      reset()                   │
-    └────────────────────────────────────────────────┘
-           (Manual intervention required)
+
+```mermaid
+flowchart TB
+    Idle1["⚪ Idle State"]
+    Measuring["🟢 Measuring State\n(Active data collection)"]
+    Idle2["⚪ Idle State\n(After stop)"]
+    SafeState["🟠 SafeState\n(Circuit breaker tripped)"]
+    Error["🔴 Error State\n(Transient failure)"]
+    
+    Idle1 -->|"start()\nOperator command"| Measuring
+    Measuring -->|"N consecutive failures\n(Circuit Breaker)"| SafeState
+    Measuring -->|"Single failure\n(Transient)"| Error
+    Error -->|"Retry successful"| Measuring
+    Error -->|"Too many retries"| SafeState
+    Measuring -->|"stop()\nNormal shutdown"| Idle2
+    SafeState -->|"reset()\nManual intervention"| Idle1
+    
+    Note1["🛡️ Circuit Breaker:\nAfter 3 consecutive failures,\nautomatically enter SafeState\nto prevent cascade failures"]
+    Note2["🔧 Manual Reset Required:\nSafeState cannot auto-recover.\nOperator must investigate\nand explicitly reset()"]
+    
+    SafeState -.-> Note1
+    SafeState -.-> Note2
+    
+    classDef idleStyle fill:#e0e0e0,stroke:#757575,stroke-width:2px,color:#000
+    classDef measuringStyle fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
+    classDef safeStyle fill:#ff9800,stroke:#e65100,stroke-width:3px,color:#fff
+    classDef errorStyle fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
+    classDef noteStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    
+    class Idle1,Idle2 idleStyle
+    class Measuring measuringStyle
+    class SafeState safeStyle
+    class Error errorStyle
+    class Note1,Note2 noteStyle
 ```
 
 **Interview Talking Points:**
@@ -232,6 +305,39 @@ void GatewayCore::producer_loop() {
 - 64KB RAM on STM32F4
 - No dynamic allocation (MISRA-C rules)
 - Stack vs heap trade-offs
+
+```mermaid
+flowchart LR
+    subgraph Embedded["🔴 Embedded (STM32F4)"]
+        direction TB
+        E1["💾 64KB Total RAM"]
+        E2["🚫 No malloc/new\n(MISRA-C rule)"]
+        E3["📏 Stack: 8KB\n(fixed at compile)"]
+        E4["📦 Static arrays\n(compile-time size)"]
+        E5["⚡ Guaranteed: No OOM\n(all allocations upfront)"]
+    end
+    
+    subgraph Backend["🟽 TelemetryHub (Backend)"]
+        direction TB
+        B1["💾 ~Unlimited RAM\n(GBs available)"]
+        B2["✅ Dynamic allocation OK\n(std::vector, std::queue)"]
+        B3["🔒 BUT: Bounded queue\n(max 1000 samples)"]
+        B4["📊 Memory = 64KB\n(predictable, not unlimited)"]
+        B5["⚡ Embedded discipline:\nPrevent OOM proactively"]
+    end
+    
+    Embedded -->|"Principle:\nBounded resources"| Backend
+    
+    Philosophy["🧠 Philosophy Transfer:\nEmbedded: Must bound (no choice)\nBackend: Should bound (by design)\n\nResult: Predictable memory,\nno surprise OOM at 3am!"]
+    
+    classDef embeddedStyle fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000
+    classDef backendStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:3px,color:#000
+    classDef philosophyStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    
+    class E1,E2,E3,E4,E5 embeddedStyle
+    class B1,B2,B3,B4,B5 backendStyle
+    class Philosophy philosophyStyle
+```
 
 **TelemetryHub Implementation:**
 
@@ -379,6 +485,37 @@ Errors: 0 (100% success rate)
 **TelemetryHub Implementation:**
 
 **File:** [`gateway/src/ThreadPool.cpp`](../gateway/src/ThreadPool.cpp) - Worker sleep
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Worker as 🟽 Worker Thread
+    participant CV as 🔔 Condition Variable (cv_)
+    participant Queue as 📦 Job Queue
+    participant Producer as 🔵 Producer
+    
+    Note over Worker: Idle - no jobs
+    Worker->>CV: cv_.wait(lock, predicate)
+    Note over Worker,CV: 😴 SLEEP (CPU ~0%)\nLike STM32 WFI instruction
+    Note over Worker: Waiting for interrupt...
+    
+    Producer->>Queue: push(job)
+    Queue->>CV: cv_.notify_one()
+    Note over CV: 🔔 WAKE UP!\nLike GPIO interrupt
+    
+    CV->>Worker: Wake up (~1μs latency)
+    Note over Worker: ⚡ ACTIVE (CPU 100%)
+    Worker->>Queue: pop() job
+    Worker->>Worker: Execute job
+    Note over Worker: Job processing...\n(0.8ms average)
+    
+    Worker->>CV: cv_.wait(lock, predicate)
+    Note over Worker: 😴 Back to SLEEP\n(CPU ~0% again)
+    
+    rect rgb(255, 249, 196)
+        Note over Worker,Producer: 💡 Embedded Parallel:\nSTM32 WFI (Wait For Interrupt):\n- Sleep: 3mA (vs 30mA active)\n- Wake: 10μs on GPIO interrupt\n- Battery life: 1 year\n\nBackend cv_.wait():\n- Sleep: ~0% CPU (vs 100% busy-wait)\n- Wake: ~1μs on notify\n- Server cost: $0 for idle threads
+    end
+```
 
 ```cpp
 void ThreadPool::worker_loop() {

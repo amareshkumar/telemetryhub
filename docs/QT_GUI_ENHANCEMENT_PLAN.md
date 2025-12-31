@@ -4,18 +4,41 @@
 ## Current State Analysis
 
 ### What We Have (Basic but Functional)
-```
-┌────────────────────────────────┐
-│   TelemetryHub - GUI           │
-├────────────────────────────────┤
-│ State: Measuring               │ ← QLabel
-│ Latest: #42  42.71 arb.units   │ ← QLabel
-│                                │
-│ [Start]  [Stop]  [Refresh]     │ ← QPushButton × 3
-│                                │
-├────────────────────────────────┤
-│ Ready                          │ ← QStatusBar
-└────────────────────────────────┘
+
+```mermaid
+flowchart TB
+    subgraph Window["TelemetryHub - Qt GUI Window"]
+        direction TB
+        Title["📊 TelemetryHub - GUI"]
+        
+        subgraph Display["Display Area"]
+            State["State: Measuring<br/>(QLabel)"]
+            Latest["Latest: #42  42.71 arb.units<br/>(QLabel)"]
+        end
+        
+        subgraph Controls["Control Panel"]
+            direction LR
+            BtnStart["🟢 Start<br/>(QPushButton)"]
+            BtnStop["🔴 Stop<br/>(QPushButton)"]
+            BtnRefresh["🔄 Refresh<br/>(QPushButton)"]
+        end
+        
+        StatusBar["Ready<br/>(QStatusBar)"]
+        
+        Title -.-> Display
+        Display -.-> Controls
+        Controls -.-> StatusBar
+    end
+    
+    classDef titleStyle fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#fff,font-weight:bold
+    classDef displayStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef controlStyle fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef statusStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    
+    class Title titleStyle
+    class State,Latest displayStyle
+    class BtnStart,BtnStop,BtnRefresh controlStyle
+    class StatusBar statusStyle
 ```
 
 **Current Features:**
@@ -138,18 +161,39 @@ void MainWindow::updateChart() {
 ### 1.2 Metrics Dashboard (QTableWidget)
 
 **What It Shows:**
-```
-┌────────────────────────────────────────┐
-│ Metrics Dashboard                      │
-├──────────────────────┬─────────────────┤
-│ Samples Processed    │ 12,543          │
-│ Samples Dropped      │ 0               │
-│ Queue Depth          │ 12/1000         │
-│ Pool Jobs Processed  │ 12,543          │
-│ Pool Avg Time        │ 0.8 ms          │
-│ Thread Pool Size     │ 4 threads       │
-│ Uptime               │ 00:05:42        │
-└──────────────────────┴─────────────────┘
+
+```mermaid
+flowchart TB
+    subgraph Dashboard["📊 Metrics Dashboard (QTableWidget)"]
+        subgraph Metrics["Real-Time Metrics"]
+            M1["📈 Samples Processed: 12,543"]
+            M2["⚠️ Samples Dropped: 0"]
+            M3["📦 Queue Depth: 12/1000"]
+        end
+        
+        subgraph Pool["Thread Pool Metrics"]
+            P1["⚙️ Pool Jobs Processed: 12,543"]
+            P2["⏱️ Pool Avg Time: 0.8 ms"]
+            P3["🧵 Thread Pool Size: 4"]
+        end
+        
+        subgraph System["System Status"]
+            S1["🕒 Uptime: 00:05:42"]
+        end
+    end
+    
+    Refresh["🔄 Refresh Button"] --> API["GET /metrics"]
+    API --> Dashboard
+    
+    classDef metricStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef poolStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef systemStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef apiStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    
+    class M1,M2,M3 metricStyle
+    class P1,P2,P3 poolStyle
+    class S1 systemStyle
+    class Refresh,API apiStyle
 ```
 
 **Code:**
