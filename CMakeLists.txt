@@ -37,6 +37,10 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(GetGit)   # loads thub_get_git_info()
 
+# FASTBuild integration (optional)
+# Enable with: cmake -DTHUB_ENABLE_FASTBUILD=ON
+include(FASTBuild)
+
 # Compute git info for generated header if needed
 thub_get_git_info(GIT_TAG GIT_SHA)
 

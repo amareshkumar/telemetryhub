@@ -31,6 +31,28 @@ void RestClient::getStatus(std::function<void(const QJsonObject&, const QString&
     });
 }
 
+void RestClient::getMetrics(std::function<void(const QJsonObject&, const QString&)> onDone) {
+    QUrl url = base_.resolved(QUrl("/metrics"));
+    QNetworkRequest req(url);
+    auto* reply = nam_->get(req);
+
+    QObject::connect(reply, &QNetworkReply::finished, reply, [reply, onDone]() {
+        const auto status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (reply->error() != QNetworkReply::NoError) {
+            onDone(QJsonObject{}, QString::fromUtf8("HTTP error %1: %2").arg(status).arg(reply->errorString()));
+        } else {
+            const auto data = reply->readAll();
+            auto doc = QJsonDocument::fromJson(data);
+            if (!doc.isObject()) {
+                onDone(QJsonObject{}, QStringLiteral("Malformed JSON in /metrics"));
+            } else {
+                onDone(doc.object(), QString());
+            }
+        }
+        reply->deleteLater();
+    });
+}
+
 void RestClient::sendStart(std::function<void(bool, const QString&)> onDone) {
     doPost("/start", std::move(onDone));
 }

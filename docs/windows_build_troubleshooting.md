@@ -72,3 +72,169 @@ This note summarizes recurring Windows/MSVC issues we hit and the fixes, so futu
 - `.vcxproj` lists `/external:I` entries pointing at `C:/msys64/...`.
 
 Keep this doc updated when new symptoms or fixes are discovered.
+
+---
+
+## 5) FASTBuild Issues
+
+### Worker Connectivity Problems
+
+- **Symptoms**:
+  - `fbuild` reports "No workers available" or "Connection refused"
+  - Builds fall back to local compilation only
+  - Firewall warnings in Event Viewer
+
+- **Causes**:
+  - Firewall blocking ports 31392-31393
+  - Worker machines not running FBuildWorker service
+  - Network routing issues
+
+- **Fixes**:
+  ```powershell
+  # Allow FASTBuild through Windows Firewall
+  New-NetFirewallRule -DisplayName "FASTBuild Coordinator" `
+    -Direction Inbound -Protocol TCP -LocalPort 31392 -Action Allow
+  
+  New-NetFirewallRule -DisplayName "FASTBuild Worker" `
+    -Direction Inbound -Protocol TCP -LocalPort 31392-31393 -Action Allow
+  
+  # Verify worker is running
+  Test-NetConnection -ComputerName 192.168.1.10 -Port 31392
+  
+  # Check worker status (on worker machine)
+  Get-Service FBuildWorker
+  # Should show "Running"
+  ```
+
+### Cache Corruption
+
+- **Symptoms**:
+  - `fbuild` reports "Cache verification failed"
+  - Linker errors after cached build: `LNK1136: invalid or corrupt file`
+  - Builds succeed after cache clear
+
+- **Causes**:
+  - Network share corruption (power loss, disk full)
+  - Version mismatch between FASTBuild versions
+  - Partial writes to cache
+
+- **Fixes**:
+  ```powershell
+  # Clear local cache
+  Remove-Item -Recurse -Force .fbuild.cache
+  
+  # Clear network cache (as admin, on file server)
+  Remove-Item -Recurse -Force \\fileserver\FBCache\*
+  
+  # Rebuild with clean cache
+  fbuild -config build_vs26\fbuild.bff -dist -cache
+  ```
+
+### Firewall Configuration Issues
+
+- **Symptoms**:
+  - FASTBuild works on some machines but not others
+  - `fbuild -dist` shows "Timeout waiting for workers"
+  - Windows Security alerts for fbuild.exe
+
+- **Fixes**:
+  ```powershell
+  # Add exception for FASTBuild executable
+  New-NetFirewallRule -DisplayName "FASTBuild Executable" `
+    -Direction Outbound -Program "C:\tools\FASTBuild\fbuild.exe" -Action Allow
+  
+  # Verify rule exists
+  Get-NetFirewallRule -DisplayName "FASTBuild*"
+  
+  # Test connectivity to worker pool
+  Test-NetConnection -ComputerName worker1.local -Port 31392 -InformationLevel Detailed
+  ```
+
+### .bff Version Mismatch
+
+- **Symptoms**:
+  - `fbuild` reports "Unknown compiler option"
+  - MSVC version mismatch errors
+  - Missing Qt MOC files
+
+- **Causes**:
+  - CMake generated .bff with different Visual Studio version
+  - Qt path changed after .bff generation
+  - FASTBuild version updated (incompatible .bff syntax)
+
+- **Fixes**:
+  ```powershell
+  # Regenerate .bff files with updated configuration
+  Remove-Item build_vs26\fbuild.bff
+  .\configure_fbuild.ps1 -EnableFastBuild
+  
+  # Verify MSVC version in .bff
+  Select-String -Path build_vs26\fbuild.bff -Pattern "Compiler\('MSVC-Compiler'\)"
+  # Should show correct Visual Studio version
+  
+  # Rebuild from scratch
+  cmake --build build_vs26 --clean-first --config Release
+  fbuild -config build_vs26\fbuild.bff -dist -cache
+  ```
+
+### Linker Errors After Distributed Build
+
+- **Symptoms**:
+  - `fatal error LNK2001: unresolved external symbol`
+  - Libraries built successfully but linking fails
+  - Works with MSBuild but fails with FASTBuild
+
+- **Causes**:
+  - Object files compiled with different compiler flags
+  - Library order incorrect in .bff Executable() section
+  - Missing dependencies in FASTBuild target definition
+
+- **Fixes**:
+  ```powershell
+  # Check .bff Executable() configuration
+  Select-String -Path build_vs26\fbuild.bff -Pattern "Executable\('gateway_app'\)" -Context 10
+  
+  # Verify .Libraries order matches CMake target_link_libraries
+  # In .bff:
+  #   .Libraries = { 'gateway_core', 'device' }  # Correct order
+  # NOT:
+  #   .Libraries = { 'device', 'gateway_core' }  # Wrong order (unresolved symbols)
+  
+  # Rebuild libraries explicitly
+  fbuild -config build_vs26\fbuild.bff device gateway_core -clean
+  fbuild -config build_vs26\fbuild.bff gateway_app
+  ```
+
+### Performance Not Improved
+
+- **Symptoms**:
+  - FASTBuild build time similar to MSBuild
+  - No distribution happening (all local builds)
+  - Cache hit rate 0%
+
+- **Causes**:
+  - Workers not configured (`-dist` flag missing)
+  - Cache path incorrect or inaccessible
+  - Network share too slow (cache writes timeout)
+
+- **Fixes**:
+  ```powershell
+  # Verify worker list in configure_fbuild.ps1
+  .\configure_fbuild.ps1 -EnableFastBuild -WorkerList "192.168.1.10,192.168.1.11,192.168.1.12"
+  
+  # Enable verbose logging
+  fbuild -config build_vs26\fbuild.bff -dist -cache -verbose
+  # Check for:
+  #   "Distributing to X workers"
+  #   "Cache hit: Y/Z files"
+  
+  # Benchmark cache performance
+  Measure-Command {
+    Copy-Item build_vs26\generated\device.obj \\fileserver\FBCache\test.obj
+  }
+  # Should be < 100ms for local network
+  
+  # Use local cache if network is slow
+  # In build_vs26\fbuild.bff, change:
+  #   Settings { .CachePath = '.fbuild.cache' }  # Local cache only
+  ```
