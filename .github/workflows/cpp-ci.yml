@@ -39,10 +39,11 @@ jobs:
           if [ -f build_asan/gateway/gateway_app ]; then build_asan/gateway/gateway_app --version; fi
           if [ -f build_asan/gateway_app ]; then build_asan/gateway_app --version; fi
 
-      - name: Stress Test
-        run: |
-          ./build/tools/stress_test --duration 60s --producers 10
-          # Fail if throughput < 5M ops/sec or memory grows > 100MB
+      # Stress test disabled until stress_test tool is implemented
+      # - name: Stress Test
+      #   run: |
+      #     ./build/tools/stress_test --duration 60s --producers 10
+      #     # Fail if throughput < 5M ops/sec or memory grows > 100MB
 
   windows:
     if: ${{ github.event_name != 'pull_request' }}
@@ -98,18 +99,23 @@ jobs:
           dir: ${{ github.workspace }}
           cache: 'true'
 
-      - name: Guardrail: Verify Qt was installed
+      - name: Guardrail - Verify Qt was installed
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          "Qt6_DIR=$env:Qt6_DIR"
-          if (-not $env:Qt6_DIR) { throw 'Qt6_DIR not set by install-qt-action' }
+          Write-Host "Qt6_DIR=$env:Qt6_DIR"
+          if (-not $env:Qt6_DIR) { 
+            throw 'Qt6_DIR not set by install-qt-action' 
+          }
           if (-not (Test-Path $env:Qt6_DIR)) {
-            throw "Qt6_DIR path '$env:Qt6_DIR' does not exist"
+            throw "Qt6_DIR path does not exist: $env:Qt6_DIR"
           }
           Write-Host "Qt6_DIR found at $env:Qt6_DIR"
-          Get-Command windeployqt6.exe -ErrorAction SilentlyContinue
-          Get-Command windeployqt.exe -ErrorAction SilentlyContinue
+          if (Get-Command windeployqt6.exe -ErrorAction SilentlyContinue) {
+            Write-Host "Found windeployqt6.exe"
+          } elseif (Get-Command windeployqt.exe -ErrorAction SilentlyContinue) {
+            Write-Host "Found windeployqt.exe"
+          }
 
       - name: Configure (GUI Preset VS2022)
         shell: bash
