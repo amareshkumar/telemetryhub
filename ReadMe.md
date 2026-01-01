@@ -290,9 +290,19 @@ Device State: SafeState
 ```text
 telemetryhub/
 ├─ CMakeLists.txt
+├─ CMakePresets.json                # Build presets (linux-ninja-release, vs2026, etc.)
+├─ ReadMe.md                        # This file
+├─ LICENSE
 ├─ cmake/
-│  └─ ConfigWarnings.cmake           # optional warnings, flags, etc.
-├─ docs/
+│  └─ ConfigWarnings.cmake          # Compiler warnings configuration
+├─ scripts/                         # PowerShell automation scripts
+│  ├─ configure_fbuild.ps1          # FASTBuild configuration
+│  ├─ cleanup_branches.ps1          # Branch cleanup automation
+│  └─ organize_repo.ps1             # Repository organization
+├─ docs/                            # Documentation (66+ files)
+│  ├─ PROJECT_STRATEGY.md           # Dual-project rationale
+│  ├─ PROJECT_BOUNDARIES.md         # Feature boundaries
+│  ├─ REPOSITORY_STRUCTURE.md       # This folder structure guide
 │  ├─ architecture.md
 │  ├─ system_overview.md
 │  └─ configuration.md
@@ -303,7 +313,7 @@ telemetryhub/
 │  │  └─ TelemetrySample.h
 │  └─ src/
 │     ├─ Device.cpp
-│     └─ DeviceConfig.cpp           # later
+│     └─ DeviceConfig.cpp
 ├─ gateway/
 │  ├─ CMakeLists.txt
 │  ├─ include/telemetryhub/gateway/
@@ -315,7 +325,7 @@ telemetryhub/
 │     ├─ GatewayCore.cpp
 │     ├─ TelemetryQueue.cpp
 │     ├─ RestCloudClient.cpp
-│     └─ main_gateway.cpp           # console/REST gateway app
+│     └─ main_gateway.cpp
 ├─ gui/
 │  ├─ CMakeLists.txt
 │  └─ src/
@@ -325,12 +335,17 @@ telemetryhub/
 ├─ tests/
 │  ├─ CMakeLists.txt
 │  ├─ test_device.cpp
-│  └─ test_queue.cpp
+│  ├─ test_queue.cpp
+│  └─ scripts/
+│     └─ http_integration.ps1       # Integration test scripts
 └─ tools/
    ├─ perf_tool.cpp
-   ├─ run_ci.sh
-   └─ run_ci.bat
+   ├─ device_simulator_cli.cpp
+   ├─ run_gui.ps1                   # Tool-specific scripts
+   └─ render_mermaid.ps1
 ```
+
+**Note:** All PowerShell scripts in root have been moved to `scripts/`. All markdown files (except ReadMe.md) moved to `docs/`. See [docs/REPOSITORY_STRUCTURE.md](docs/REPOSITORY_STRUCTURE.md) for guidelines.
 
 ## cpp-httplib integration
 
