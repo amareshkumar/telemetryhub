@@ -85,8 +85,19 @@
         "BUILD_GUI": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
-    }
-    ,
+    },
+    {
+      "name": "linux-ninja-release",
+      "displayName": "Linux Ninja (Release)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
     {
       "name": "qtcreator-ninja",
       "displayName": "Qt Creator (Ninja, GUI)",
@@ -153,6 +164,7 @@
     { "name": "vs2022-gui", "configurePreset": "vs2022-gui", "configuration": "Release", "targets": ["gui_app", "gateway_app"] },
     { "name": "vs2026-gui", "configurePreset": "vs2026-gui", "configuration": "Release", "targets": ["gui_app", "gateway_app"] },
     { "name": "linux-ninja-debug", "configurePreset": "linux-ninja-debug" },
+    { "name": "linux-ninja-release", "configurePreset": "linux-ninja-release" },
     { "name": "linux-ninja-asan-ubsan", "configurePreset": "linux-ninja-asan-ubsan" },
     { "name": "linux-ninja-tsan", "configurePreset": "linux-ninja-tsan" },
     { "name": "qtcreator-ninja", "configurePreset": "qtcreator-ninja", "configuration": "Release", "targets": ["gui_app", "gateway_app"] }
@@ -163,6 +175,7 @@
     { "name": "vs2026-release", "configurePreset": "vs2026-release", "configuration": "Release" },
     { "name": "vs2022-release-ci", "configurePreset": "vs2022-release-ci", "configuration": "Release", "output": { "outputOnFailure": true } },
     { "name": "linux-ninja-debug", "configurePreset": "linux-ninja-debug" },
+    { "name": "linux-ninja-release", "configurePreset": "linux-ninja-release", "output": { "outputOnFailure": true } },
     { "name": "linux-ninja-asan-ubsan", "configurePreset": "linux-ninja-asan-ubsan" },
     { "name": "linux-ninja-tsan", "configurePreset": "linux-ninja-tsan" },
     { "name": "qtcreator-ninja", "configurePreset": "qtcreator-ninja", "configuration": "Release", "output": { "outputOnFailure": true } }
