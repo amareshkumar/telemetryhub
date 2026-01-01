@@ -1,5 +1,7 @@
 # TelemetryHub
 
+**High-Performance IoT Gateway with Modern C++20 and Real-Time Qt6 Visualization**
+
 [![Build Status](https://github.com/amareshkumar/telemetryhub/workflows/CI/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions)
 [![Release](https://img.shields.io/github/v/release/amareshkumar/telemetryhub)](https://github.com/amareshkumar/telemetryhub/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -10,6 +12,12 @@
 > Modern C++ (RAII, move semantics), concurrent programming (9.1M ops/sec),  
 > hardware abstraction (UART/I2C/SPI), and enterprise-grade engineering  
 > (CI/CD, sanitizers, Google Test, comprehensive docs)
+
+---
+
+## 🔗 Related Project
+
+**[Telemetry-Platform](https://github.com/amareshkumar/telemetry-platform)** - Microservices architecture companion project demonstrating distributed systems design (separate ingestion/processing services with Redis coordination). While TelemetryHub focuses on **implementation excellence** (C++20 features, Qt GUI, build optimization), Telemetry-Platform showcases **architectural patterns** (service separation, distributed coordination, scalability). See [PROJECT_STRATEGY.md](PROJECT_STRATEGY.md) for details.
 
 ## Why This Project?
 TelemetryHub showcases real-world systems programming patterns used in:
