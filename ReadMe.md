@@ -2,7 +2,8 @@
 
 **High-Performance IoT Gateway with Modern C++20 and Real-Time Qt6 Visualization**
 
-[![Build Status](https://github.com/amareshkumar/telemetryhub/workflows/CI/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions)
+[![C++ CI](https://github.com/amareshkumar/telemetryhub/workflows/C++%20CI/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions)
+[![Windows CI](https://github.com/amareshkumar/telemetryhub/workflows/Windows%20C++%20CI/badge.svg)](https://github.com/amareshkumar/telemetryhub/actions)
 [![Release](https://img.shields.io/github/v/release/amareshkumar/telemetryhub)](https://github.com/amareshkumar/telemetryhub/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
@@ -69,18 +70,90 @@ fbuild -config build_vs26\fbuild.bff -dist -cache
 # See docs/fastbuild_guide.md for setup instructions
 ```
 
-### Run the Gateway App: 
-   ```bash
-   ./build/gateway/gateway_app --config docs/config.example.ini
-   ```
-### Send a Test Request:
-   ```bash
-   curl -X POST http://localhost:8080/start
-   ```
-   This starts the telemetry data flow. Check the status with:
-   ```bash
-   curl http://localhost:8080/status
-   ```
+---
+
+## 🧪 Testing
+
+### Run All Tests
+
+**Windows:**
+```powershell
+# Build with tests
+cmake --preset vs2026-release
+cmake --build build_vs26 --config Release
+
+# Run all tests
+ctest --test-dir build_vs26 -C Release --output-on-failure
+
+# Run specific test
+ctest --test-dir build_vs26 -C Release -R test_device --output-on-failure
+```
+
+**Linux:**
+```bash
+# Build with tests
+cmake --preset linux-ninja-release
+cmake --build --preset linux-ninja-release
+
+# Run all tests (50+ test cases)
+ctest --test-dir build --output-on-failure
+
+# Run specific test category
+ctest --test-dir build -R test_queue --output-on-failure
+
+# Verbose output
+ctest --test-dir build --verbose
+```
+
+### Integration Test (HTTP)
+
+**Windows:**
+```powershell
+# Start gateway in one terminal
+.\build_vs26\gateway\Release\gateway_app.exe
+
+# Run integration test in another terminal
+ctest -C Release -R http_integration --output-on-failure
+```
+
+**Linux:**
+```bash
+# Start gateway in one terminal
+./build/gateway/gateway_app &
+
+# Run integration test
+ctest --test-dir build -R http_integration --output-on-failure
+
+# Stop gateway
+pkill gateway_app
+```
+
+### Manual API Testing
+
+**Linux/macOS:**
+```bash
+# Run the gateway
+./build/gateway/gateway_app --config docs/config.example.ini
+
+# In another terminal, test endpoints
+curl http://localhost:8080/status
+curl -X POST http://localhost:8080/start
+curl -X POST http://localhost:8080/stop
+curl http://localhost:8080/samples | jq  # Pretty-print JSON
+```
+
+**Windows:**
+```powershell
+# Run the gateway
+.\build_vs26\gateway\Release\gateway_app.exe --config docs\config.example.ini
+
+# Test endpoints
+Invoke-WebRequest -UseBasicParsing http://localhost:8080/status
+Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/start
+Invoke-WebRequest -UseBasicParsing -Method POST http://localhost:8080/stop
+```
+
+---
 
 ## About
 
