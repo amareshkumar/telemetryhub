@@ -13,7 +13,18 @@ git checkout main
 
 # Step 3: Rewrite history (THE FIX)
 Write-Host "`nRewriting git history to remove Copilot attribution..." -ForegroundColor Cyan
-git filter-branch --env-filter '
+
+# Clean up any previous backup refs to avoid conflicts
+if (Test-Path ".git/refs/original") {
+    Write-Host "Removing old backup refs from previous run..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force ".git/refs/original"
+}
+
+# Set environment variable to squelch the warning
+$env:FILTER_BRANCH_SQUELCH_WARNING = "1"
+
+# Run filter-branch to rewrite history (with -f to force)
+git filter-branch -f --env-filter '
 if [ "$GIT_AUTHOR_EMAIL" = "198982749+Copilot@users.noreply.github.com" ]; then
     export GIT_AUTHOR_NAME="Amaresh Kumar"
     export GIT_AUTHOR_EMAIL="amaresh.kumar@live.in"
