@@ -207,31 +207,31 @@ jobs:
 
   # Coverage job disabled - linux-ninja-coverage preset not yet configured
   # To enable: Add linux-ninja-coverage preset to CMakePresets.json
-  # coverage:
-  #   name: Linux (Coverage via Presets)
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout (full history for git describe)
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
+  coverage:
+    name: Linux (Coverage via Presets)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for git describe)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  #     - name: Install toolchain
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -y build-essential cmake ninja-build
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
 
-  #     - name: Clean previous build dirs
-  #       run: |
-  #         rm -rf build build_asan build_tsan
+      - name: Clean previous build dirs
+        run: |
+          rm -rf build build_asan build_tsan
 
-  #     - name: Generate Coverage
-  #       run: |
-  #         cmake --preset linux-ninja-coverage
-  #         cmake --build --preset linux-ninja-coverage
-  #         ctest --preset linux-ninja-coverage
+      - name: Generate Coverage
+        run: |
+          cmake --preset linux-ninja-coverage
+          cmake --build --preset linux-ninja-coverage
+          ctest --preset linux-ninja-coverage
 
-  #     - name: Upload to Codecov
-  #       uses: codecov/codecov-action@v3
-  #       with:
-  #         files: ./build_coverage/coverage.info
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./build_coverage/coverage.info
