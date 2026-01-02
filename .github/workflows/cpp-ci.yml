@@ -101,13 +101,15 @@ jobs:
           arch: 'win64_msvc2022_64'
           dir: ${{ github.workspace }}
           cache: 'true'
+          set-env: 'true'
 
       - name: Guardrail - Verify Qt was installed
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           Write-Host "Qt6_DIR=$env:Qt6_DIR"
-          if (-not $env:Qt6_DIR) { 
+          Write-Host "CMAKE_PREFIX_PATH=$env:CMAKE_PREFIX_PATH"
+          if (-not $env:Qt6_DIR -and -not $env:CMAKE_PREFIX_PATH) { 
             throw 'Qt6_DIR not set by install-qt-action' 
           }
           if (-not (Test-Path $env:Qt6_DIR)) {
