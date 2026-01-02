@@ -103,6 +103,29 @@ jobs:
           cache: 'true'
           set-env: 'true'
 
+      - name: Set Qt Environment Variables
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          
+          # install-qt-action outputs the Qt directory
+          $qtDir = "${{ steps.install-qt.outputs.qt_dir }}"
+          Write-Host "Qt installed at: $qtDir"
+          
+          # Set Qt6_DIR for CMake find_package(Qt6)
+          $qt6Dir = "$qtDir/lib/cmake/Qt6"
+          Write-Host "Setting Qt6_DIR to: $qt6Dir"
+          echo "Qt6_DIR=$qt6Dir" >> $env:GITHUB_ENV
+          
+          # Set CMAKE_PREFIX_PATH as fallback
+          Write-Host "Setting CMAKE_PREFIX_PATH to: $qtDir"
+          echo "CMAKE_PREFIX_PATH=$qtDir" >> $env:GITHUB_ENV
+          
+          # Add Qt bin to PATH for windeployqt
+          $qtBin = "$qtDir/bin"
+          Write-Host "Adding to PATH: $qtBin"
+          echo "$qtBin" >> $env:GITHUB_PATH
+
       - name: Guardrail - Verify Qt was installed
         shell: pwsh
         run: |
@@ -115,7 +138,7 @@ jobs:
           if (-not (Test-Path $env:Qt6_DIR)) {
             throw "Qt6_DIR path does not exist: $env:Qt6_DIR"
           }
-          Write-Host "Qt6_DIR found at $env:Qt6_DIR"
+          Write-Host "✓ Qt6_DIR found at $env:Qt6_DIR"
           if (Get-Command windeployqt6.exe -ErrorAction SilentlyContinue) {
             Write-Host "Found windeployqt6.exe"
           } elseif (Get-Command windeployqt.exe -ErrorAction SilentlyContinue) {
