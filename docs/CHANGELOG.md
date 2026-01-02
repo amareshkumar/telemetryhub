@@ -89,8 +89,12 @@ docs/<topic>                   # Documentation updates
 - Build now succeeds without errors ✅
 
 **CI/CD Optimization:**
-- Fixed Qt6_DIR environment variable not being set (added `set-env: 'true'`)
-- Improved Qt installation verification with fallback to CMAKE_PREFIX_PATH
+- **Fixed Qt6_DIR CI failure (3rd attempt):** install-qt-action v4 `set-env` doesn't work on Windows
+  - Solution: Manually set environment variables using action outputs
+  - Set `Qt6_DIR` to `${{ steps.install-qt.outputs.qt_dir }}/lib/cmake/Qt6`
+  - Set `CMAKE_PREFIX_PATH` as fallback to Qt root directory
+  - Add Qt bin to `PATH` for windeployqt access
+  - Verification: Check both Qt6_DIR and CMAKE_PREFIX_PATH before configure
 - Expected 40% CI time improvement with proposed optimizations (45min → 27min)
 
 ### 📚 Documentation Updates
