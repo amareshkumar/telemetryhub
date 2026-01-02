@@ -169,6 +169,29 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_PREFIX_PATH": "$env{THUB_QT_ROOT}"
       }
+    },
+    {
+      "name": "vs2022-fastbuild",
+      "displayName": "VS 2022 (x64, FASTBuild Enabled)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build_fastbuild",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "THUB_ENABLE_FASTBUILD": "ON"
+      },
+      "environment": {
+        "INCLUDE": "",
+        "LIB": "",
+        "LIBPATH": "",
+        "CPATH": "",
+        "PKG_CONFIG_PATH": "",
+        "CPLUS_INCLUDE_PATH": "",
+        "C_INCLUDE_PATH": ""
+      }
     }
   ],
 
@@ -178,6 +201,7 @@
     { "name": "vs2022-release-ci", "configurePreset": "vs2022-release-ci", "configuration": "Release" },
     { "name": "vs2022-gui", "configurePreset": "vs2022-gui", "configuration": "Release", "targets": ["gui_app", "gateway_app"] },
     { "name": "vs2026-gui", "configurePreset": "vs2026-gui", "configuration": "Release", "targets": ["gui_app", "gateway_app"] },
+    { "name": "vs2022-fastbuild", "configurePreset": "vs2022-fastbuild", "configuration": "Release" },
     { "name": "linux-ninja-debug", "configurePreset": "linux-ninja-debug" },
     { "name": "linux-ninja-release", "configurePreset": "linux-ninja-release" },
     { "name": "linux-ninja-asan-ubsan", "configurePreset": "linux-ninja-asan-ubsan" },
