@@ -141,6 +141,21 @@
       }
     },
     {
+      "name": "linux-ninja-coverage",
+      "displayName": "Linux Ninja (Coverage)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build_coverage",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTING": "ON",
+        "BUILD_GUI": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_FLAGS": "-g -O0 --coverage -fprofile-arcs -ftest-coverage",
+        "CMAKE_C_FLAGS": "-g -O0 --coverage -fprofile-arcs -ftest-coverage",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage"
+      }
+    },
+    {
       "name": "vs2026-gui",
       "displayName": "VS 2026 (x64, GUI Release)",
       "generator": "Visual Studio 18 2026",
@@ -167,6 +182,7 @@
     { "name": "linux-ninja-release", "configurePreset": "linux-ninja-release" },
     { "name": "linux-ninja-asan-ubsan", "configurePreset": "linux-ninja-asan-ubsan" },
     { "name": "linux-ninja-tsan", "configurePreset": "linux-ninja-tsan" },
+    { "name": "linux-ninja-coverage", "configurePreset": "linux-ninja-coverage" },
     { "name": "qtcreator-ninja", "configurePreset": "qtcreator-ninja", "configuration": "Release", "targets": ["gui_app", "gateway_app"] }
   ],
 
@@ -178,6 +194,7 @@
     { "name": "linux-ninja-release", "configurePreset": "linux-ninja-release", "output": { "outputOnFailure": true } },
     { "name": "linux-ninja-asan-ubsan", "configurePreset": "linux-ninja-asan-ubsan" },
     { "name": "linux-ninja-tsan", "configurePreset": "linux-ninja-tsan" },
+    { "name": "linux-ninja-coverage", "configurePreset": "linux-ninja-coverage", "output": { "outputOnFailure": true } },
     { "name": "qtcreator-ninja", "configurePreset": "qtcreator-ninja", "configuration": "Release", "output": { "outputOnFailure": true } }
   ]
 }
