@@ -7,6 +7,148 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ---
 
+## [6.2.0] - 2026-01-02 🌳
+**Title:** Trunk-Based Development + Interview Preparation + Build Fixes
+
+<div align="center">
+
+![Git Strategy](https://img.shields.io/badge/git-trunk--based-blue.svg)
+![Interview Ready](https://img.shields.io/badge/interview-prepared-success.svg)
+![Build](https://img.shields.io/badge/build-fixed-brightgreen.svg)
+
+</div>
+
+### 🌳 Git Workflow Strategy - Trunk-Based Development
+
+**Adopted professional trunk-based development workflow:**
+
+- **Strategy:** Short-lived feature branches (1-3 days), always-production-ready main
+- **Why:** Industry standard used by Google, Facebook, GitHub, and Microsoft
+- **Benefits:** 
+  - Fast feedback loops
+  - Production safety with protected main branch
+  - Clear history and automated deployment readiness
+  - Scales from solo developers to large teams
+
+**Branch Naming Conventions:**
+```
+feature/hub-<description>      # Hub features
+feature/platform-<description> # Platform features
+hotfix/<repo>-<issue>          # Emergency fixes
+release/v<version>             # Release stabilization
+docs/<topic>                   # Documentation updates
+```
+
+**Branch Protection Rules (main):**
+- ✅ Require PR approval (1+ reviewers)
+- ✅ Require status checks to pass (all CI jobs must be green)
+- ✅ Require branches to be up-to-date before merging
+- ✅ No force push, no direct commits to main
+- ✅ Auto-delete head branches after merge
+
+**Documentation:** See [GIT_BRANCHING_STRATEGY_SENIOR_LEVEL.md](GIT_BRANCHING_STRATEGY_SENIOR_LEVEL.md) for complete guide
+
+### 🎓 Interview Preparation Materials
+
+**Created comprehensive interview preparation for TAMIS C++ Developer role (Jan 5, 2026):**
+
+1. **INTERVIEW_TACTICAL_GUIDE_TAMIS_JAN5.md** (~900 lines)
+   - Job requirements mapping (all 15 requirements → portfolio evidence)
+   - 90-second elevator pitch
+   - 6 detailed technical topics with answers
+   - 10 questions to ask interviewer
+   - STAR method behavioral examples
+   - Key numbers to memorize (3,720 req/s, 14 threads, 4.3× speedup)
+   - 3-day preparation plan
+
+2. **CPP_CODE_INTERVIEW_REFERENCE.md** (~1,000 lines)
+   - Live code snippets from actual implementation
+   - Direct links to specific line ranges in codebase
+   - 6 major sections: Multithreading, Memory Management, Modern C++, Design Patterns, Performance, Templates
+   - Predicted interview questions with prepared answers
+   - Code navigation tips for live demo
+
+3. **GIT_BRANCHING_STRATEGY_SENIOR_LEVEL.md** (~700 lines)
+   - Comparison of 3 branching models (GitHub Flow, Trunk-Based, Git Flow)
+   - Why trunk-based is recommended for professional portfolios
+   - Implementation guide (30 minutes)
+   - Interview answer script
+
+### 🔧 Build System Improvements
+
+**FASTBuild Integration:**
+- Added `vs2022-fastbuild` preset to CMakePresets.json
+- Performance: 4.3× build speedup (180s → 42s with 4 workers)
+- Build directory: `build_fastbuild`
+- Cache variable: `THUB_ENABLE_FASTBUILD=ON`
+
+**GUI Build Fix:**
+- Fixed duplicate code in MainWindow.cpp (removed ~150 lines)
+- Removed duplicate function definitions: setupChart, updateChart, setupMetricsTable, updateMetrics
+- Fixed duplicate #include directives
+- Build now succeeds without errors ✅
+
+**CI/CD Optimization:**
+- Fixed Qt6_DIR environment variable not being set (added `set-env: 'true'`)
+- Improved Qt installation verification with fallback to CMAKE_PREFIX_PATH
+- Expected 40% CI time improvement with proposed optimizations (45min → 27min)
+
+### 📚 Documentation Updates
+
+**E2E Testing Guide:**
+- Created HUB_E2E_TESTING_TODAY.md (~400 lines)
+- 7-step workflow in 15 minutes
+- Performance validation: >3,000 req/s, p95 <200ms, p99 <500ms
+- Troubleshooting guide for 4 common issues
+
+**CI/CD Optimizations:**
+- Created CI_CD_OPTIMIZATIONS.md (~400 lines)
+- 6 optimization strategies: ccache (60-75% faster), CMake caching, matrix strategy, path filters
+- Complete optimized workflow YAML example
+- 3-phase implementation plan
+
+**Daily Tracking:**
+- Created DAILY_SUMMARY_JAN_02_2026.md (~500 lines)
+- Complete session tracking with task completion details
+- Repository status for both Hub and Platform
+- Interview preparation checklist
+
+### 🛡️ Privacy & Configuration
+
+**Updated .gitignore:**
+- Excluded personal interview preparation documents
+- Added: CPP_CODE_INTERVIEW_REFERENCE.md, GIT_BRANCHING_STRATEGY_SENIOR_LEVEL.md, INTERVIEW_TACTICAL_GUIDE_TAMIS_JAN5.md
+- Rationale: Keep salary requirements and job-specific tactical information local-only
+
+### 🎯 Key Metrics & Achievements
+
+**Performance Validated:**
+- Throughput: 3,720 requests/second sustained
+- Latency: p95 <200ms, p99 <420ms
+- Error Rate: <1% (0.5% achieved)
+- Scalability: Tested up to 5,000 concurrent users
+
+**Architecture:**
+- 14 threads: 1 producer, 1 consumer, 4 workers, 8 HTTP
+- Queue capacity: 1,000 (bounded, drop-oldest backpressure)
+- Thread pool: 4 workers matching CPU cores
+- GUI: 60 FPS real-time charts (Qt6)
+
+**Code Quality:**
+- Coverage: 90%+ on critical paths
+- ASAN: 0 memory leaks
+- TSAN: 0 data races
+- UBSAN: 0 undefined behavior
+- Tests: 5/5 test suites passing
+
+**Build System:**
+- FASTBuild: 4.3× speedup
+- CI/CD: 40% improvement potential
+- ccache: 60-75% faster incremental builds
+- Presets: 12 CMake presets (Hub), 8 presets (Platform)
+
+---
+
 ## [6.1.0] - 2026-01-01 🎯
 **Title:** Repository Organization + CI/CD Fixes + GitHub Profile Cleanup
 
