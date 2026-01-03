@@ -1,0 +1,53 @@
+---
+name: Feature Request
+about: Suggest an enhancement or new feature for TelemetryHub
+title: '[FEATURE] '
+labels: enhancement
+assignees: amareshkumar
+
+---
+
+## 🚀 Feature Description
+<!-- A clear and concise description of the feature you'd like to see -->
+
+
+## 💡 Use Case / Motivation
+<!-- Why is this feature important? What problem does it solve? -->
+
+
+## 📝 Proposed Solution
+<!-- How would you implement this feature? -->
+
+
+## 🔄 Alternatives Considered
+<!-- Have you considered any alternative solutions or features? -->
+
+
+## 🎯 Acceptance Criteria
+<!-- What would success look like? How do you know when this is complete? -->
+
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
+
+## 🧪 Testing Strategy
+<!-- How should this feature be tested? -->
+
+
+## 📊 Impact Assessment
+<!-- Select all that apply -->
+
+- [ ] Affects core telemetry pipeline (Device → Gateway → Cloud)
+- [ ] Requires API changes (breaking/non-breaking)
+- [ ] Impacts performance (latency, throughput, memory)
+- [ ] Requires new dependencies
+- [ ] Affects threading model or concurrency
+- [ ] Requires documentation updates
+
+## 🔗 Related Issues/PRs
+<!-- Link to related issues, PRs, or discussions -->
+
+
+## 🖼️ Mockups/Diagrams
+<!-- (Optional) Include diagrams, mockups, or examples -->
+

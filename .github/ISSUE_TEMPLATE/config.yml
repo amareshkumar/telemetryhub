@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/amareshkumar/telemetryhub/discussions
+    about: For general discussions, ideas, or questions that don't fit into issues
+  - name: 🐛 Security Vulnerability
+    url: https://github.com/amareshkumar/telemetryhub/security/advisories/new
+    about: Report security vulnerabilities privately (do NOT create public issues)
+  - name: 📧 Direct Contact
+    url: https://github.com/amareshkumar
+    about: For private inquiries or collaboration opportunities
