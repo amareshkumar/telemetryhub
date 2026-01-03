@@ -1,0 +1,56 @@
+---
+name: Documentation Improvement
+about: Suggest improvements to documentation, examples, or comments
+title: '[DOCS] '
+labels: documentation
+assignees: amareshkumar
+
+---
+
+## 📖 Documentation Issue
+<!-- Describe what's missing, unclear, or incorrect in the documentation -->
+
+
+## 📍 Location
+<!-- Where is the documentation issue? -->
+
+- **File/Page:** [e.g., README.md, docs/architecture.md, GatewayCore.h]
+- **Section:** [e.g., "Threading Model", line 142]
+- **Link:** [if applicable]
+
+## ❌ Current State
+<!-- What does the documentation currently say? Quote it if possible -->
+
+```
+Paste current text here (if applicable)
+```
+
+## ✅ Suggested Improvement
+<!-- What should it say instead? Provide specific wording if possible -->
+
+```
+Paste suggested text here
+```
+
+## 💡 Why This Matters
+<!-- Why is this improvement important? -->
+
+- [ ] Confusing for new users
+- [ ] Technically incorrect
+- [ ] Missing critical information
+- [ ] Outdated (no longer matches code)
+- [ ] Inconsistent with other docs
+- [ ] Other: ___
+
+## 🎯 Audience
+<!-- Who would benefit from this improvement? -->
+
+- [ ] New contributors
+- [ ] End users
+- [ ] Developers integrating with API
+- [ ] Interview preparation (showcasing project)
+- [ ] Other: ___
+
+## 📚 Additional Resources
+<!-- Link to helpful resources, examples, or references -->
+
