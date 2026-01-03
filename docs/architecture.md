@@ -1,56 +1,142 @@
 # Telemetry Gateway – Architecture Overview
 
-This project is a small telemetry gateway that sits between a simulated device and one or more clients (CLI app, REST API, Qt UI). It continuously reads measurements from the device, tracks the latest value and device state, and exposes this information to the outside world in a safe, controlled way.
+**Last Updated:** January 2, 2026  
+**Version:** 6.2.0  
+**For Detailed Code Flow:** See [CODE_FLOW_INTERVIEW_GUIDE.md](CODE_FLOW_INTERVIEW_GUIDE.md)
 
-The core ideas are:
+This project is a production-ready telemetry gateway that sits between simulated/real devices and multiple clients (CLI app, REST API, Qt6 GUI). It continuously reads measurements from devices, tracks the latest value and device state, and exposes this information to the outside world in a thread-safe, performant manner.
 
-- **Decouple device I/O from consumers** using a producer–consumer pattern.
-- **Keep the public interface simple**: “what is the current state?” and “what is the latest sample?”.
-- **Detect SafeState** and stop monitoring cleanly.
+## Core Design Principles
+
+- **Decouple device I/O from consumers** using a producer–consumer pattern with bounded queue
+- **Keep the public interface simple**: GatewayCore exposes `start()`, `stop()`, `device_state()`, `latest_sample()`, `get_metrics()`
+- **Thread Safety**: Mutex for complex types, atomics for simple counters, condition variables for coordination
+- **Performance**: 3,720 req/s REST API throughput, p99 <500ms latency, zero-copy move semantics
+- **Detect SafeState** and stop monitoring cleanly with graceful shutdown
+- **RAII Everywhere**: Threads, file handles, locks managed automatically
 
 ---
 
 ## High-Level Design
 
-There are three main layers:
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        CLI[gateway_app<br/>CLI Monitor]
+        GUI[Qt6 GUI<br/>Charts & Metrics]
+    end
+    
+    subgraph "API Layer"
+        REST[REST API<br/>cpp-httplib<br/>8 threads]
+    end
+    
+    subgraph "Core Layer"
+        GC[GatewayCore<br/>Facade Pattern]
+        Q[TelemetryQueue<br/>Bounded 1000]
+        TP[ThreadPool<br/>4 Workers]
+        PT[Producer Thread]
+        CT[Consumer Thread]
+    end
+    
+    subgraph "Device Layer"
+        D[Device<br/>Pimpl Pattern]
+        BUS[IBus Interface<br/>UART/I2C/SPI]
+    end
+    
+    CLI -->|direct call| GC
+    GUI -->|HTTP GET/POST| REST
+    REST -->|query| GC
+    
+    GC -->|owns| PT
+    GC -->|owns| CT
+    GC -->|owns| Q
+    GC -->|owns| TP
+    GC -->|owns| D
+    
+    PT -->|read_sample| D
+    PT -->|push| Q
+    Q -->|pop| CT
+    CT -->|update| GC
+    CT -->|submit job| TP
+    
+    D -->|abstraction| BUS
+    
+    style D fill:#e1f5ff
+    style GC fill:#c8e6c9
+    style Q fill:#fff4e1
+    style REST fill:#ffcdd2
+    style GUI fill:#f3e5f5
+```
 
-1. **Device layer**  
-   - `DeviceSim` / `Device`  
-   - Simulates or wraps a real device that produces telemetry samples and can switch state (e.g. `Measuring`, `SafeState`).
+There are four main layers:
 
-2. **Core layer**  
-   - `GatewayCore`  
-   - Owns the device, manages background threads, holds the current `state` and `latest_sample`.
-
-3. **Client layer**  
-   - `gateway_app` (CLI) – currently implemented.
-   - REST API – designed, can be added on top of `GatewayCore`.
-   - Qt UI – designed to consume the REST API.
+1. **Device layer** - Hardware abstraction and simulation
+2. **Core layer** - Threading, queue, metrics, state management
+3. **API layer** - REST endpoints for external access
+4. **Client layer** - CLI and Qt6 GUI consumers
 
 ---
 
 ## Components
 
-### Device (`DeviceSim` / `Device`)
+### Device (`Device`)
 
-- Represents the underlying hardware or a simulator.
-- Periodically produces telemetry samples (e.g. floating-point values).
-- Has an internal **state machine**, e.g.:
-  - `Measuring` – normal operation, samples are produced.
-  - `SafeState` – device has hit a fault or safety condition, no more normal sampling.
+**Design Pattern:** Pimpl (Pointer to Implementation) for ABI stability
 
-The device doesn’t know about queues or UIs. It just starts, runs, and updates its own state and output.
+- Represents the underlying hardware or a simulator using `Device::Impl` opaque pointer
+- Periodically produces telemetry samples with realistic noise (`std::normal_distribution`)
+- Internal **state machine**:
+  - `Idle` – device created but not started
+  - `Measuring` – normal operation, samples produced every 100ms
+  - `SafeState` – fault/safety condition, no more sampling
+- Hardware abstraction via `IBus` interface (Strategy pattern):
+  - `SerialPortSim` - simulated UART
+  - Can add `I2CBus`, `SPIBus` implementations
+- Fault injection modes for testing:
+  - `None` - normal operation
+  - `Random` - probabilistic failures
+  - `Intermittent` - consecutive failure threshold  
+  - `Deterministic` - fault after N samples
+- Move semantics: Samples moved, not copied (zero-copy)
+
+The device doesn't know about queues, threads, or UIs. It provides a clean `read_sample()` interface.
+
+**Key Implementation Details:**
+```cpp
+std::optional<TelemetrySample> read_sample();  // Returns nullopt on error
+DeviceState state() const;                     // Atomic read
+void inject_fault(FaultInjectionMode, double probability);
+```
 
 ---
 
 ### TelemetryQueue
 
-- An internal queue used to pass samples from the producer thread to the consumer thread.
-- Supports operations like:
-  - `push(sample)` – producer adds new samples.
-  - `pop(sample)` – consumer retrieves samples (blocking or non-blocking, depending on implementation).
+- A **bounded** queue (capacity 1000) used to pass samples from producer thread to consumer thread
+- Uses `std::deque<TelemetrySample>` with mutex and condition variable for thread synchronization
+- Supports operations:
+  - `push(sample)` – producer adds samples (blocks if queue full - **backpressure**)
+  - `pop()` – consumer retrieves samples (blocks if queue empty)
+  - `try_push(sample, timeout)` – non-blocking with timeout
+  - `try_pop(timeout)` – non-blocking with timeout
+  - `size()`, `capacity()` – monitoring
+- Pre-allocated capacity prevents runtime heap allocations
+- Move semantics ensure zero-copy sample transfer
 
-The queue decouples “how fast the device produces data” from “how fast the rest of the system consumes it”.
+The queue decouples "how fast the device produces data" from "how fast the rest of the system consumes it". The bounded nature prevents unbounded memory growth and provides backpressure when consumers can't keep up.
+
+---
+
+### ThreadPool (Day 17 Addition)
+
+- **4 worker threads** (configurable, defaults to `std::thread::hardware_concurrency()`)
+- Job queue with `std::function<void()>` for async task execution
+- Used for non-critical work like cloud uploads, aggregations, logging
+- Prevents spawning threads per request (thread reuse)
+- Metrics exposed: `jobs_processed`, `jobs_queued`, `avg_processing_ms`, `num_threads`
+- RAII: Destructor waits for all jobs to complete before joining workers
+
+**Pattern:** Object pool for threads, prevents overhead of thread creation/destruction
 
 ---
 
