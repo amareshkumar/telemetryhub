@@ -35,15 +35,56 @@ output.txt
 # External dependencies (if fetched)
 external/
 
-# Personal tracking (don't commit)
+# =========================================
+# INTERVIEW PREPARATION - PRIVATE (NEVER COMMIT)
+# =========================================
+
+# Root level interview documents
+Pre_Interview_Feedback.md
+COMMIT_NOW.md
+SENIOR_LEVEL_TODO.md
+INTERVIEW_DOCS_MIGRATION_PLAN.md
+
+# Personal daily logs and tracking (pattern matching)
+docs/DAILY_SUMMARY_*.md
+docs/MORNING_STATUS_*.md
+docs/ACTION_ITEMS_*.md
+docs/REPOSITORY_STATUS_*.md
+docs/MASTER_TODO_*.md
+docs/TECHNICAL_DEBT_TRACKER.md
+
+# Interview-specific documents (pattern matching)
+docs/*INTERVIEW*.md
+docs/*interview*.md
+docs/interview-*.md
+docs/telemetry_platform_interview_guide.md
 docs/portfolio_enhancement_guide.ipynb
 docs/interview-topics.md
 docs/CPP_CODE_INTERVIEW_REFERENCE.md
 docs/GIT_BRANCHING_STRATEGY_SENIOR_LEVEL.md
 docs/INTERVIEW_TACTICAL_GUIDE_TAMIS_JAN5.md
 docs/GITHUB_BRANCH_PROTECTION_SETUP.md
-SENIOR_LEVEL_TODO.md
-COMMIT_NOW.md
+
+# Career planning documents
+docs/SENIOR_TO_ARCHITECT_JOURNEY_*.md
+
+# Internal tracking/issues (pattern matching)
+docs/FIX_*.md
+docs/GITHUB_CLEANUP_*.md
+docs/HUB_*_TODAY.md
+
+# Interview prep created today (Jan 3, 2026)
+docs/CACHE_LINE_FALSE_SHARING.md
+docs/CODE_FLOW_INTERVIEW_GUIDE.md
+docs/COMPONENT_INTERACTIONS_PATTERNS.md
+docs/COMMAND_PATTERN_ANALYSIS.md
+docs/EDGE_COMPUTING_ANALYSIS.md
+
+# Personal archives (entire directory)
+docs/archives/career-preparation/
+
+# Interview notes directory
+docs/interview/
 
 # Old mermaid files (already migrated)
 ./Control flow-day05.mmd
