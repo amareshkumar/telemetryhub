@@ -1,0 +1,75 @@
+---
+name: Performance Issue
+about: Report performance degradation, high latency, or resource usage problems
+title: '[PERFORMANCE] '
+labels: performance
+assignees: amareshkumar
+
+---
+
+## ⚡ Performance Problem
+<!-- Describe the performance issue you're experiencing -->
+
+
+## 📊 Metrics & Measurements
+<!-- Provide quantitative data about the performance issue -->
+
+- **Latency:** [e.g., p95: 800ms, p99: 1200ms]
+- **Throughput:** [e.g., 500 req/s vs expected 3,720 req/s]
+- **CPU Usage:** [e.g., 85% avg, spikes to 100%]
+- **Memory Usage:** [e.g., 250 MB RSS, growing over time]
+- **Queue Depth:** [e.g., consistently at 950/1000 capacity]
+
+## 🔬 Profiling Data
+<!-- Attach or paste profiling results -->
+
+- **Tool Used:** [e.g., perf, VTune, gprof, Valgrind]
+- **Hot Spots:** [e.g., GatewayCore::consumer_loop taking 45% CPU]
+- **Cache Misses:** [e.g., 80% L1 cache miss rate]
+
+```
+Paste profiling output here
+```
+
+## 🧪 Reproduction Steps
+<!-- How to reproduce the performance issue -->
+
+1. Configure TelemetryHub with `...`
+2. Generate load with `...`
+3. Measure with `...`
+4. Observe metric `...`
+
+## ✅ Expected Performance
+<!-- What performance were you expecting? -->
+
+- Based on documentation: [e.g., 3,720 req/s, p99 <500ms]
+- Based on similar systems: [e.g., comparable to ...]
+
+## 🖥️ Environment
+- **OS:** [e.g., Ubuntu 22.04]
+- **CPU:** [e.g., Intel i7-12700K, 8 cores]
+- **RAM:** [e.g., 32GB DDR4-3200]
+- **Compiler:** [e.g., GCC 12.2.0]
+- **Compiler Flags:** [e.g., -O3 -march=native]
+- **TelemetryHub Config:** [e.g., queue_size=1000, thread_pool=4]
+
+## 🔧 Attempted Fixes
+<!-- What have you tried to improve performance? -->
+
+- [ ] Adjusted queue size
+- [ ] Changed thread pool size
+- [ ] Modified sampling rate
+- [ ] Tried different compiler optimizations
+- [ ] Other: ___
+
+## 📈 Performance Impact
+<!-- How critical is this issue? -->
+
+- [ ] Blocks production deployment
+- [ ] Degrades user experience
+- [ ] Increases operational costs
+- [ ] Other: ___
+
+## 🔗 Related Issues
+<!-- Link to related performance issues or discussions -->
+

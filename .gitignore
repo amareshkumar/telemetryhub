@@ -35,7 +35,29 @@ output.txt
 # External dependencies (if fetched)
 external/
 
-# Personal tracking (don't commit)
+# =========================================
+# INTERVIEW PREPARATION - PRIVATE (NEVER COMMIT)
+# =========================================
+
+# Root level interview documents
+Pre_Interview_Feedback.md
+COMMIT_NOW.md
+SENIOR_LEVEL_TODO.md
+INTERVIEW_DOCS_MIGRATION_PLAN.md
+
+# Personal daily logs and tracking (pattern matching)
+docs/DAILY_SUMMARY_*.md
+docs/MORNING_STATUS_*.md
+docs/ACTION_ITEMS_*.md
+docs/REPOSITORY_STATUS_*.md
+docs/MASTER_TODO_*.md
+docs/TECHNICAL_DEBT_TRACKER.md
+
+# Interview-specific documents (pattern matching)
+docs/*INTERVIEW*.md
+docs/*interview*.md
+docs/interview-*.md
+docs/telemetry_platform_interview_guide.md
 docs/portfolio_enhancement_guide.ipynb
 docs/interview-topics.md
 docs/CPP_CODE_INTERVIEW_REFERENCE.md
