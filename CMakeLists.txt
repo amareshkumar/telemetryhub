@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(TelemetryHub 
-    VERSION 4.0.0
+    VERSION 6.3.0
     LANGUAGES CXX
 )
 
