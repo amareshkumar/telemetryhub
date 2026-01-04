@@ -88,3 +88,43 @@ docs/interview
 
 # Log files
 *.log
+
+# ────────────────────────────────────────────────────────────────────
+# Personal and Interview Materials (Added: 2026-01-04)
+# Migrated to telemetryhub-dev (private repo)
+# Pattern B: Personal-Only Private Repos
+# ────────────────────────────────────────────────────────────────────
+
+# Interview preparation
+docs/INTERVIEW_*.md
+docs/*interview*.md
+docs/*Interview*.md
+docs/CODE_FLOW_INTERVIEW_GUIDE.md
+docs/telemetry_platform_interview_guide.md
+Pre_Interview_Feedback.md
+INTERVIEW_*.md
+
+# Career and senior-level planning
+docs/SENIOR_TO_ARCHITECT_*.md
+SENIOR_TO_ARCHITECT_*.md
+docs/GIT_BRANCHING_STRATEGY_SENIOR_LEVEL.md
+**/career-preparation/
+
+# Daily logs and personal notes
+docs/day[0-9]*_*.md
+docs/Day[0-9]*_*.md
+docs/DAY[0-9]*_*.md
+docs/distqueue_day*.md
+
+# Fixes and issue tracking
+docs/FIX_*.md
+docs/GITHUB_CLEANUP_*.md
+
+# Temporary and working files
+DAILY_SUMMARY_*.md
+*_backup_*.md
+
+# Migration and planning documents
+*MIGRATION*.md
+PLATFORM_*.md
+REPOSITORY_STRATEGY*.md
