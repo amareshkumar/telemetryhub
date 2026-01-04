@@ -14,7 +14,7 @@
 > hardware abstraction (UART/I2C/SPI), and enterprise-grade engineering  
 > (CI/CD, sanitizers, Google Test, comprehensive docs)
 >
-> **v6.3.0:** Strategic analysis + technical deep dives (spurious wakeups, Modbus integration, coverage strategy)
+> **v6.4.0:** Script consolidation + language distribution optimization (28 scripts → 5 utilities, improved C++ showcase)
 - **Financial systems** (market data processing)
 - **Observability platforms** (metrics collection)
 
