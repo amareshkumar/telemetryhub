@@ -1,0 +1,48 @@
+---
+name: Question / Discussion
+about: Ask a question about TelemetryHub architecture, design, or usage
+title: '[QUESTION] '
+labels: question
+assignees: amareshkumar
+
+---
+
+## ❓ Question
+<!-- Ask your question clearly and concisely -->
+
+
+## 🔍 Context
+<!-- Provide context that helps understand your question -->
+
+<!-- Select the topic area -->
+- [ ] Architecture / Design Patterns
+- [ ] Threading / Concurrency
+- [ ] Performance / Optimization
+- [ ] Build System / CMake
+- [ ] REST API / Integration
+- [ ] Qt6 GUI
+- [ ] Testing / CI/CD
+- [ ] Configuration
+- [ ] Deployment / Docker
+- [ ] Other: ___
+
+## 📚 What I've Already Tried
+<!-- What documentation have you read? What have you searched for? -->
+
+- [ ] Read README.md
+- [ ] Checked architecture.md
+- [ ] Searched existing issues
+- [ ] Reviewed code in `...`
+- [ ] Tried: ___
+
+## 💭 My Current Understanding
+<!-- What do you currently understand about the topic? -->
+
+
+## 🎯 What I'm Trying to Achieve
+<!-- What's your end goal? -->
+
+
+## 📖 References
+<!-- Link to relevant docs, code sections, or related issues -->
+

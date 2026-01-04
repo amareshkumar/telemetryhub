@@ -1,0 +1,53 @@
+---
+name: Bug Report
+about: Report a bug or unexpected behavior in TelemetryHub
+title: '[BUG] '
+labels: bug
+assignees: amareshkumar
+
+---
+
+## 🐛 Bug Description
+<!-- A clear and concise description of what the bug is -->
+
+
+## 🔄 Steps to Reproduce
+<!-- Steps to reproduce the behavior -->
+
+1. Build TelemetryHub with `...`
+2. Run `gateway_app` with config `...`
+3. Send request to `...`
+4. Observe error `...`
+
+## ✅ Expected Behavior
+<!-- What you expected to happen -->
+
+
+## ❌ Actual Behavior
+<!-- What actually happened -->
+
+
+## 🖥️ Environment
+<!-- Please complete the following information -->
+
+- **OS:** [e.g., Windows 11, Ubuntu 22.04, macOS 14]
+- **Compiler:** [e.g., MSVC 2022, GCC 12, Clang 16]
+- **CMake Version:** [e.g., 3.28.1]
+- **TelemetryHub Version/Commit:** [e.g., v6.2.0 or commit SHA]
+- **Qt Version (if GUI related):** [e.g., Qt6.5]
+
+## 📋 Logs/Output
+<!-- Paste relevant logs, error messages, or stack traces -->
+
+```
+Paste logs here
+```
+
+## 🔍 Additional Context
+<!-- Add any other context about the problem here -->
+<!-- Screenshots, config files, or related issues -->
+
+
+## 🧪 Possible Solution
+<!-- (Optional) If you have ideas on how to fix this -->
+
